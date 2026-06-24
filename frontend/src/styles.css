@@ -85,7 +85,15 @@ input, textarea, select {
 .view {
   flex: 1;
   padding: 20px;
-  padding-bottom: 96px;
+  padding-bottom: 80px;
+}
+
+.app-footer {
+  text-align: center;
+  font-size: 12px;
+  color: var(--text-dim);
+  padding: 8px 20px 72px;
+  margin-top: auto;
 }
 
 .tab-bar {
@@ -153,8 +161,9 @@ input, textarea, select {
   color: var(--text-dim);
 }
 
-.input, .date-input {
+.input {
   width: 100%;
+  box-sizing: border-box;
   background: var(--bg);
   border: 1px solid var(--border);
   border-radius: 8px;
@@ -164,8 +173,18 @@ input, textarea, select {
   transition: border-color 0.15s;
 }
 
-.input:focus, .date-input:focus {
+.input:focus {
   border-color: var(--accent);
+}
+
+.input[type="date"] {
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.input[type="date"]::-webkit-calendar-picker-indicator {
+  filter: invert(0.7);
+  cursor: pointer;
 }
 
 .rating-row {

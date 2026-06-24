@@ -63,6 +63,9 @@ export default function App() {
         <button className="signout-btn" onClick={handleSignOut}>Sign out</button>
       </header>
       {activeTab === 'today' ? <TodayView /> : <InsightsView />}
+      <footer className="app-footer">
+        © {new Date().getFullYear()} adduckivity
+      </footer>
       <nav className="tab-bar">
         {TABS.map((tab) => (
           <button

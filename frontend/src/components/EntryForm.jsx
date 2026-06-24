@@ -49,7 +49,7 @@ export default function EntryForm({ onSubmit, initialDate, submitting }) {
         <label htmlFor="log-date">Date</label>
         <input
           id="log-date"
-          className="date-input"
+          className="input"
           type="date"
           value={logDate}
           onChange={(e) => setLogDate(e.target.value)}
