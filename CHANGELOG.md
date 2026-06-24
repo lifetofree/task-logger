@@ -5,6 +5,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.2.0] - 2026-06-24
+
+### Changed
+- Color theme shifted to light earth tones (warm cream/linen backgrounds, deep espresso text, burnt amber accent, sage green, terracotta danger).
+- Slider thumbs now use accent-colored border on light background.
+- Heatmap progression updated to warm honey-to-dark-umber scale.
+- Trend chart colors, grid, axes, and tooltip updated to match light palette.
+- PWA manifest theme/background colors updated to warm cream.
+- Fixed residual cyan tint on selected rating buttons (now warm amber tint).
+- Active pills, period selectors, and primary buttons now use white text on accent background.
+
 ## [2.1.0] - 2026-06-24
 
 ### Changed

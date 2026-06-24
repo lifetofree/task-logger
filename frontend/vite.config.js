@@ -12,8 +12,8 @@ export default defineConfig({
         name: 'Task Logger',
         short_name: 'TaskLogger',
         description: 'Daily task logging with happiness and progress tracking.',
-        theme_color: '#2c2416',
-        background_color: '#2c2416',
+        theme_color: '#f5ece0',
+        background_color: '#f5ece0',
         display: 'standalone',
         start_url: '/',
         icons: [

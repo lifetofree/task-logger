@@ -1,16 +1,16 @@
 :root {
-  --bg: #2c2416;
-  --bg-elev: #3d3220;
-  --bg-elev-2: #4e4029;
-  --border: #5c4e36;
-  --text: #f5ebd6;
-  --text-dim: #b8a884;
-  --accent: #d4a056;
-  --accent-strong: #c08e3e;
-  --danger: #c1675a;
-  --success: #8aa867;
-  --warning: #d4a056;
-  --shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+  --bg: #f5ece0;
+  --bg-elev: #ecddd0;
+  --bg-elev-2: #dfd0be;
+  --border: #c8b090;
+  --text: #2b1e0c;
+  --text-dim: #7c5e38;
+  --accent: #b86020;
+  --accent-strong: #964e18;
+  --danger: #a03828;
+  --success: #50823c;
+  --warning: #b86020;
+  --shadow: 0 4px 16px rgba(60, 30, 10, 0.10);
   font-family: 'IBM Plex Sans Thai', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
 }
 
@@ -242,7 +242,7 @@ input, textarea, select {
 }
 
 .input[type="date"]::-webkit-calendar-picker-indicator {
-  filter: invert(0.7);
+  filter: opacity(0.5);
   cursor: pointer;
 }
 
@@ -265,7 +265,7 @@ input, textarea, select {
 
 .rating-btn.selected {
   border-color: var(--accent);
-  background: rgba(34, 211, 238, 0.12);
+  background: rgba(184, 96, 32, 0.12);
   transform: translateY(-1px);
 }
 
@@ -280,7 +280,7 @@ input, textarea, select {
 .submit-btn {
   width: 100%;
   background: var(--accent);
-  color: #001018;
+  color: #fff;
   font-weight: 600;
   font-size: 15px;
   padding: 12px;
@@ -393,11 +393,11 @@ input, textarea, select {
 }
 
 .slider-happy {
-  background: linear-gradient(to right, #c1675a, #d4a056, #8aa867);
+  background: linear-gradient(to right, #e06858, #e8a838, #6ab848);
 }
 
 .slider-progress {
-  background: linear-gradient(to right, #4e4029, #d4a056);
+  background: linear-gradient(to right, #dfd0be, #b86020);
 }
 
 .slider::-webkit-slider-thumb {
@@ -406,9 +406,9 @@ input, textarea, select {
   width: 24px;
   height: 24px;
   border-radius: 50%;
-  background: var(--text);
-  border: 3px solid var(--bg);
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+  background: var(--bg-elev);
+  border: 3px solid var(--accent);
+  box-shadow: 0 2px 6px rgba(60, 30, 10, 0.2);
   cursor: grab;
 }
 
@@ -421,9 +421,9 @@ input, textarea, select {
   width: 24px;
   height: 24px;
   border-radius: 50%;
-  background: var(--text);
-  border: 3px solid var(--bg);
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+  background: var(--bg-elev);
+  border: 3px solid var(--accent);
+  box-shadow: 0 2px 6px rgba(60, 30, 10, 0.2);
   cursor: grab;
 }
 
@@ -484,16 +484,17 @@ input, textarea, select {
 
 .btn-primary {
   background: var(--accent);
-  color: #001018;
+  color: #fff;
 }
 
 .btn-secondary {
   background: var(--bg-elev-2);
   color: var(--text);
+  border: 1px solid var(--border);
 }
 
 .btn-danger {
-  background: rgba(248, 113, 113, 0.15);
+  background: rgba(160, 56, 40, 0.12);
   color: var(--danger);
 }
 
@@ -525,7 +526,7 @@ input, textarea, select {
 }
 
 .error-banner {
-  background: rgba(248, 113, 113, 0.15);
+  background: rgba(160, 56, 40, 0.10);
   color: var(--danger);
   padding: 10px 12px;
   border-radius: 8px;
@@ -585,7 +586,7 @@ input, textarea, select {
 
 .range-pill.active {
   background: var(--accent);
-  color: #001018;
+  color: #fff;
   border-color: var(--accent);
   font-weight: 600;
 }
@@ -617,12 +618,12 @@ input, textarea, select {
   background: var(--bg-elev-2);
 }
 
-.heatmap-cell[data-level="0"] { background: #3d3220; }
-.heatmap-cell[data-level="1"] { background: #6b5530; }
-.heatmap-cell[data-level="2"] { background: #8a6e3c; }
-.heatmap-cell[data-level="3"] { background: #a8844a; }
-.heatmap-cell[data-level="4"] { background: #c49956; }
-.heatmap-cell[data-level="5"] { background: #e0b870; }
+.heatmap-cell[data-level="0"] { background: #e8ddd0; }
+.heatmap-cell[data-level="1"] { background: #c8a870; }
+.heatmap-cell[data-level="2"] { background: #b08840; }
+.heatmap-cell[data-level="3"] { background: #946830; }
+.heatmap-cell[data-level="4"] { background: #784820; }
+.heatmap-cell[data-level="5"] { background: #5c2e10; }
 
 .heatmap-legend {
   display: flex;
@@ -685,7 +686,7 @@ input, textarea, select {
 
 .period-selector button.active {
   background: var(--accent);
-  color: #001018;
+  color: #fff;
   border-color: var(--accent);
   font-weight: 600;
 }
