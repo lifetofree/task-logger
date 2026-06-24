@@ -9,7 +9,4 @@ binding = "ASSETS"
 [[d1_databases]]
 binding = "DB"
 database_name = "task-logger-db"
-database_id = "REPLACE_WITH_REAL_D1_ID"
-
-[vars]
-AUTH_TOKEN = "change-me-to-a-secret-token"
+database_id = "b4f4f6e0-9f2c-4ab2-bcad-6976d5801524"
