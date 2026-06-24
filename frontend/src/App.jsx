@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { getToken, clearToken } from './api/client.js';
+import { getToken, getStoredUser, clearSession } from './api/client.js';
 import LoginScreen from './auth/LoginScreen.jsx';
+import SignupScreen from './auth/SignupScreen.jsx';
 import TodayView from './views/TodayView.jsx';
 import InsightsView from './views/InsightsView.jsx';
 
@@ -11,6 +12,8 @@ const TABS = [
 
 export default function App() {
   const [authed, setAuthed] = useState(!!getToken());
+  const [mode, setMode] = useState('login');
+  const [user, setUser] = useState(getStoredUser());
   const [activeTab, setActiveTab] = useState('today');
 
   useEffect(() => {
@@ -19,19 +22,44 @@ export default function App() {
     }
   }, []);
 
+  useEffect(() => {
+    function onLogout() {
+      setAuthed(false);
+      setUser(null);
+      setMode('login');
+    }
+    window.addEventListener('auth:logout', onLogout);
+    return () => window.removeEventListener('auth:logout', onLogout);
+  }, []);
+
   function handleSignOut() {
-    clearToken();
+    clearSession();
     setAuthed(false);
+    setUser(null);
+    setMode('login');
   }
 
   if (!authed) {
-    return <LoginScreen onSuccess={() => setAuthed(true)} />;
+    if (mode === 'signup') {
+      return (
+        <SignupScreen
+          onSuccess={(u) => { setUser(u); setAuthed(true); }}
+          onSwitchToLogin={() => setMode('login')}
+        />
+      );
+    }
+    return (
+      <LoginScreen
+        onSuccess={(u) => { setUser(u); setAuthed(true); }}
+        onSwitchToSignup={() => setMode('signup')}
+      />
+    );
   }
 
   return (
     <div className="app-shell">
       <header className="app-header">
-        <h1>Task Logger</h1>
+        <h1>Task Logger{user?.username ? ` · ${user.username}` : ''}</h1>
         <button className="signout-btn" onClick={handleSignOut}>Sign out</button>
       </header>
       {activeTab === 'today' ? <TodayView /> : <InsightsView />}

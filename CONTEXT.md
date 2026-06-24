@@ -29,3 +29,15 @@ A computed view aggregating all Task Log Entries for a single Log Date: average 
 ## Day Score
 
 The aggregated Happiness and Progress values for a given day, used to rank or color-code days (e.g., in a calendar heatmap).
+
+## User
+
+A registered account that owns Task Log Entries. Identified by `id` (UUID), uniquely identified by `username` (3-32 lowercase alphanumeric + underscore), authenticated by `password_hash` (bcrypt). Created via signup, authenticated via login, both endpoints return a signed JWT.
+
+## AuthToken (JWT)
+
+A signed JSON Web Token returned by `/api/auth/signup` and `/api/auth/login`. Sent by the client as `Authorization: Bearer <jwt>`. Contains `sub` (user id), `iat`, and `exp`. Lifetime: 7 days. Signed with `JWT_SECRET`.
+
+## Session
+
+The state of "this browser is authenticated as user X." On the client: stored in `localStorage` under `task-logger:jwt`. On the server: stateless (the JWT is verified on every request).
