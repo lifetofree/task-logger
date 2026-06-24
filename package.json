@@ -1,0 +1,16 @@
+{
+  "name": "task-logger",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build:frontend": "npm --prefix frontend run build",
+    "dev:frontend": "npm --prefix frontend run dev",
+    "deploy": "npm run build:frontend && npx wrangler deploy",
+    "db:execute:local": "npx wrangler d1 execute task-logger-db --local --file=./schema.sql",
+    "db:execute:remote": "npx wrangler d1 execute task-logger-db --file=./schema.sql"
+  },
+  "devDependencies": {
+    "wrangler": "^3.65.0"
+  }
+}
