@@ -1,16 +1,16 @@
 :root {
-  --bg: #0f172a;
-  --bg-elev: #1e293b;
-  --bg-elev-2: #334155;
-  --border: #334155;
-  --text: #f1f5f9;
-  --text-dim: #94a3b8;
-  --accent: #22d3ee;
-  --accent-strong: #06b6d4;
-  --danger: #f87171;
-  --success: #4ade80;
-  --warning: #fbbf24;
-  --shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+  --bg: #2c2416;
+  --bg-elev: #3d3220;
+  --bg-elev-2: #4e4029;
+  --border: #5c4e36;
+  --text: #f5ebd6;
+  --text-dim: #b8a884;
+  --accent: #d4a056;
+  --accent-strong: #c08e3e;
+  --danger: #c1675a;
+  --success: #8aa867;
+  --warning: #d4a056;
+  --shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
   font-family: 'IBM Plex Sans Thai', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
 }
 
@@ -393,11 +393,11 @@ input, textarea, select {
 }
 
 .slider-happy {
-  background: linear-gradient(to right, #f87171, #fbbf24, #4ade80);
+  background: linear-gradient(to right, #c1675a, #d4a056, #8aa867);
 }
 
 .slider-progress {
-  background: linear-gradient(to right, #334155, #22d3ee);
+  background: linear-gradient(to right, #4e4029, #d4a056);
 }
 
 .slider::-webkit-slider-thumb {
@@ -617,12 +617,12 @@ input, textarea, select {
   background: var(--bg-elev-2);
 }
 
-.heatmap-cell[data-level="0"] { background: #1e293b; }
-.heatmap-cell[data-level="1"] { background: #155e75; }
-.heatmap-cell[data-level="2"] { background: #0e7490; }
-.heatmap-cell[data-level="3"] { background: #0891b2; }
-.heatmap-cell[data-level="4"] { background: #22d3ee; }
-.heatmap-cell[data-level="5"] { background: #67e8f9; }
+.heatmap-cell[data-level="0"] { background: #3d3220; }
+.heatmap-cell[data-level="1"] { background: #6b5530; }
+.heatmap-cell[data-level="2"] { background: #8a6e3c; }
+.heatmap-cell[data-level="3"] { background: #a8844a; }
+.heatmap-cell[data-level="4"] { background: #c49956; }
+.heatmap-cell[data-level="5"] { background: #e0b870; }
 
 .heatmap-legend {
   display: flex;

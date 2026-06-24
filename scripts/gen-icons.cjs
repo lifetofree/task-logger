@@ -4,8 +4,8 @@ const { PNG } = require('pngjs');
 
 function makeIcon(size) {
   const png = new PNG({ width: size, height: size });
-  const bg = [0x0f, 0x17, 0x2a, 0xff];
-  const accent = [0x22, 0xd3, 0xee, 0xff];
+  const bg = [0x2c, 0x24, 0x16, 0xff];
+  const accent = [0xd4, 0xa0, 0x56, 0xff];
   const radius = size * 0.22;
 
   function inRoundedRect(x, y, w, h, r) {
