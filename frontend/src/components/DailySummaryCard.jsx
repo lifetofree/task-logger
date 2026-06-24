@@ -19,7 +19,7 @@ export default function DailySummaryCard({ entries }) {
     entries.reduce((sum, e) => sum + e.happiness, 0) / count;
   const avgProgress =
     entries.reduce((sum, e) => sum + e.progress, 0) / count;
-  const completed = entries.filter((e) => e.progress === 5).length;
+  const completed = entries.filter((e) => e.progress === 10).length;
   const successRate = Math.round((completed / count) * 100);
 
   return (

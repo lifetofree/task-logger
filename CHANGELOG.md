@@ -5,6 +5,27 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.0.0] - 2026-06-24
+
+### Changed
+- **Breaking**: Happiness and Progress scales changed from 1-5 to 1-10.
+- Happiness input is now a gradient slider (red to green) with descriptive labels.
+- Progress input is now a slider showing percentage (10% increments).
+- Entry list chips show numeric value (e.g. "😊 7/10", "📊 60%").
+- Trend chart Y-axis scaled to 0-10.
+- Heatmap score thresholds recalibrated for 1-10 scale.
+- Success rate now counts entries with progress = 10 (was 5).
+- Schema CHECK constraints updated to 1-10. Existing data is wiped on migration.
+
+### Added
+- Custom slider CSS with gradient tracks and styled thumbs for dark theme.
+
+## [1.3.0] - 2026-06-24
+
+### Changed
+- Update button replaced with a floating update banner that only appears when a new version is detected.
+- Removed duplicate manual service worker registration (handled by vite-plugin-pwa).
+
 ## [1.2.0] - 2026-06-24
 
 ### Added

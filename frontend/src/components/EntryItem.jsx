@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { HAPPINESS_EMOJIS, PROGRESS_LABELS } from './EntryForm.jsx';
 import { api } from '../api/client.js';
+
+const HAPPINESS_LABELS = ['Awful', 'Bad', 'Meh', 'OK', 'Good', 'Great', 'Happy', 'Joyful', 'Amazing', 'Perfect'];
 
 function formatTime(iso) {
   if (!iso) return '';
@@ -55,35 +56,35 @@ export default function EntryItem({ entry, onChanged, onDeleted }) {
           onChange={(e) => setName(e.target.value)}
           maxLength={200}
         />
-        <div className="form-row">
-          <label style={{ fontSize: 12 }}>Happiness</label>
-          <div className="rating-row">
-            {HAPPINESS_EMOJIS.map((emoji, i) => (
-              <button
-                key={i}
-                type="button"
-                className={`rating-btn emoji ${happiness === i + 1 ? 'selected' : ''}`}
-                onClick={() => setHappiness(i + 1)}
-              >
-                {emoji}
-              </button>
-            ))}
+        <div className="form-row" style={{ marginTop: 8 }}>
+          <div className="slider-header">
+            <label style={{ fontSize: 12 }}>Happiness</label>
+            <span className="slider-value happy">{happiness}/10 <span className="slider-sub">{HAPPINESS_LABELS[happiness - 1]}</span></span>
           </div>
+          <input
+            type="range"
+            min="1"
+            max="10"
+            step="1"
+            value={happiness}
+            onChange={(e) => setHappiness(Number(e.target.value))}
+            className="slider slider-happy"
+          />
         </div>
         <div className="form-row">
-          <label style={{ fontSize: 12 }}>Progress</label>
-          <div className="rating-row">
-            {PROGRESS_LABELS.map((label, i) => (
-              <button
-                key={i}
-                type="button"
-                className={`rating-btn level ${progress === i + 1 ? 'selected' : ''}`}
-                onClick={() => setProgress(i + 1)}
-              >
-                {i + 1}
-              </button>
-            ))}
+          <div className="slider-header">
+            <label style={{ fontSize: 12 }}>Progress</label>
+            <span className="slider-value progress">{progress * 10}%</span>
           </div>
+          <input
+            type="range"
+            min="1"
+            max="10"
+            step="1"
+            value={progress}
+            onChange={(e) => setProgress(Number(e.target.value))}
+            className="slider slider-progress"
+          />
         </div>
         {error && <div className="error-banner">{error}</div>}
         <div className="edit-actions">
@@ -103,8 +104,8 @@ export default function EntryItem({ entry, onChanged, onDeleted }) {
       <div className="entry-main">
         <p className="entry-name">{entry.name}</p>
         <div className="entry-meta">
-          <span className="chip">{HAPPINESS_EMOJIS[entry.happiness - 1]}</span>
-          <span className="chip">P{entry.progress}</span>
+          <span className="chip happy-chip">😊 {entry.happiness}/10</span>
+          <span className="chip progress-chip">📊 {entry.progress * 10}%</span>
           <span>{formatTime(entry.created_at)}</span>
         </div>
         {error && <div className="error-banner" style={{ marginTop: 8 }}>{error}</div>}

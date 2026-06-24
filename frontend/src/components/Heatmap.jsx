@@ -6,11 +6,11 @@ function startOfYearUTC(year) {
 
 function scoreToLevel(score) {
   if (score == null) return 0;
-  if (score >= 4.5) return 5;
-  if (score >= 3.75) return 4;
-  if (score >= 3) return 3;
-  if (score >= 2.25) return 2;
-  if (score >= 1.5) return 1;
+  if (score >= 9) return 5;
+  if (score >= 7.5) return 4;
+  if (score >= 6) return 3;
+  if (score >= 4.5) return 2;
+  if (score >= 3) return 1;
   return 0;
 }
 

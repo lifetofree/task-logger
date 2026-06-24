@@ -28,12 +28,6 @@ export default function App() {
   });
 
   useEffect(() => {
-    if ('serviceWorker' in navigator && import.meta.env.PROD) {
-      navigator.serviceWorker.register('/sw.js').catch(() => {});
-    }
-  }, []);
-
-  useEffect(() => {
     function onLogout() {
       setAuthed(false);
       setUser(null);
@@ -54,12 +48,21 @@ export default function App() {
     await updateServiceWorker(true);
   }
 
+  function handleDismissUpdate() {
+    setNeedRefresh(false);
+  }
+
+  const updateBanner = needRefresh ? (
+    <div className="update-banner">
+      <span>A new version is available.</span>
+      <button className="update-banner-btn" onClick={handleUpdate}>Update</button>
+      <button className="update-banner-dismiss" onClick={handleDismissUpdate}>Dismiss</button>
+    </div>
+  ) : null;
+
   const footer = (
     <footer className="app-footer">
       <span>&copy; {new Date().getFullYear()} adduckivity &middot; v{VERSION}</span>
-      <button className="update-btn" onClick={handleUpdate}>
-        {needRefresh ? 'Update available - Reload' : 'Check for updates'}
-      </button>
     </footer>
   );
 
@@ -71,6 +74,7 @@ export default function App() {
             onSuccess={(u) => { setUser(u); setAuthed(true); }}
             onSwitchToLogin={() => setMode('login')}
           />
+          {updateBanner}
           {footer}
         </>
       );
@@ -81,6 +85,7 @@ export default function App() {
           onSuccess={(u) => { setUser(u); setAuthed(true); }}
           onSwitchToSignup={() => setMode('signup')}
         />
+        {updateBanner}
         {footer}
       </>
     );
@@ -93,6 +98,7 @@ export default function App() {
         <button className="signout-btn" onClick={handleSignOut}>Sign out</button>
       </header>
       {activeTab === 'today' ? <TodayView /> : <InsightsView />}
+      {updateBanner}
       {footer}
       <nav className="tab-bar">
         {TABS.map((tab) => (

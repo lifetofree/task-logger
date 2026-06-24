@@ -12,7 +12,7 @@ export default function TrendChart({ data }) {
         <LineChart data={formatted} margin={{ top: 8, right: 12, left: -16, bottom: 0 }}>
           <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
           <XAxis dataKey="label" stroke="#94a3b8" fontSize={11} />
-          <YAxis domain={[0, 5]} stroke="#94a3b8" fontSize={11} />
+          <YAxis domain={[0, 10]} stroke="#94a3b8" fontSize={11} />
           <Tooltip
             contentStyle={{ background: '#1e293b', border: '1px solid #334155', borderRadius: 8 }}
             labelStyle={{ color: '#f1f5f9' }}

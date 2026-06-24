@@ -1,10 +1,20 @@
 import React, { useState } from 'react';
 
-const HAPPINESS_EMOJIS = ['😞', '😕', '😐', '🙂', '😄'];
-const PROGRESS_LABELS = ['Just started', 'Some', 'Halfway', 'Almost', 'Complete'];
-
 function todayISO() {
   return new Date().toISOString().slice(0, 10);
+}
+
+const HAPPINESS_LABELS = ['Awful', 'Bad', 'Meh', 'OK', 'Good', 'Great', 'Happy', 'Joyful', 'Amazing', 'Perfect'];
+const PROGRESS_LABELS = ['1%', '10%', '20%', '30%', '40%', '50%', '60%', '70%', '80%', '90%', '100%'];
+
+function happinessLabel(v) {
+  if (v == null) return '';
+  return HAPPINESS_LABELS[v - 1] || '';
+}
+
+function progressLabel(v) {
+  if (v == null) return '';
+  return PROGRESS_LABELS[v] || '';
 }
 
 export default function EntryForm({ onSubmit, initialDate, submitting }) {
@@ -69,37 +79,38 @@ export default function EntryForm({ onSubmit, initialDate, submitting }) {
         />
       </div>
       <div className="form-row">
-        <label>How did you feel?</label>
-        <div className="rating-row">
-          {HAPPINESS_EMOJIS.map((emoji, i) => (
-            <button
-              key={i}
-              type="button"
-              className={`rating-btn emoji ${happiness === i + 1 ? 'selected' : ''}`}
-              onClick={() => setHappiness(i + 1)}
-              aria-label={`Happiness ${i + 1}`}
-            >
-              {emoji}
-            </button>
-          ))}
+        <div className="slider-header">
+          <label>How did you feel?</label>
+          {happiness != null && (
+            <span className="slider-value happy">{happiness}/10 <span className="slider-sub">{happinessLabel(happiness)}</span></span>
+          )}
         </div>
+        <input
+          type="range"
+          min="1"
+          max="10"
+          step="1"
+          value={happiness ?? 5}
+          onChange={(e) => setHappiness(Number(e.target.value))}
+          className="slider slider-happy"
+        />
       </div>
       <div className="form-row">
-        <label>How much progress?</label>
-        <div className="rating-row">
-          {PROGRESS_LABELS.map((label, i) => (
-            <button
-              key={i}
-              type="button"
-              className={`rating-btn level ${progress === i + 1 ? 'selected' : ''}`}
-              onClick={() => setProgress(i + 1)}
-              aria-label={`Progress ${label}`}
-              title={label}
-            >
-              {i + 1}
-            </button>
-          ))}
+        <div className="slider-header">
+          <label>How much progress?</label>
+          {progress != null && (
+            <span className="slider-value progress">{progress * 10}%</span>
+          )}
         </div>
+        <input
+          type="range"
+          min="1"
+          max="10"
+          step="1"
+          value={progress ?? 5}
+          onChange={(e) => setProgress(Number(e.target.value))}
+          className="slider slider-progress"
+        />
       </div>
       {error && <div className="error-banner">{error}</div>}
       <button className="submit-btn" type="submit" disabled={submitting}>
@@ -108,5 +119,3 @@ export default function EntryForm({ onSubmit, initialDate, submitting }) {
     </form>
   );
 }
-
-export { HAPPINESS_EMOJIS, PROGRESS_LABELS };
