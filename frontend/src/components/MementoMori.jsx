@@ -112,20 +112,29 @@ export default function MementoMori({ heatmapData, birthday }) {
     return result;
   }, [allDays]);
 
-  // Auto-scroll to today's row
+  // Auto-scroll to show 9 rows before today + today row
   const gridRef = useRef(null);
   const todayRowRef = useRef(null);
 
   useEffect(() => {
-    if (todayRowRef.current && gridRef.current) {
-      const grid = gridRef.current;
-      const row = todayRowRef.current;
-      // Scroll so 9 rows before today are at the top, today row is visible without scrolling
-      // row.offsetTop is relative to scroll content; we want today's row 10th from top
-      const targetTop = row.offsetTop - row.clientHeight * 9;
-      grid.scrollTop = Math.max(0, targetTop);
+    // Use rAF + timeout to ensure DOM layout is complete for ~1000 rows
+    function scrollToToday() {
+      if (todayRowRef.current && gridRef.current) {
+        const grid = gridRef.current;
+        const row = todayRowRef.current;
+        const targetTop = row.offsetTop - row.clientHeight * 9;
+        grid.scrollTop = Math.max(0, targetTop);
+      }
     }
-  }, [allDays.length]);
+
+    const raf = requestAnimationFrame(() => {
+      const timer = setTimeout(scrollToToday, 50);
+      // Second pass in case layout was slow
+      const timer2 = setTimeout(scrollToToday, 200);
+      return () => { clearTimeout(timer); clearTimeout(timer2); };
+    });
+    return () => cancelAnimationFrame(raf);
+  }, [allDays.length, heatmapData]);
 
   if (!birthday || allDays.length === 0) {
     return (
