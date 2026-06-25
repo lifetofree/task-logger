@@ -1,17 +1,12 @@
 import React, { useMemo } from 'react';
 
-const YEARS = 40;
+const LIFE_YEARS = 80;
 
 function isoDate(d) {
   const yr = d.getFullYear();
   const mo = String(d.getMonth() + 1).padStart(2, '0');
   const dy = String(d.getDate()).padStart(2, '0');
   return `${yr}-${mo}-${dy}`;
-}
-
-function getStartDate() {
-  const now = new Date();
-  return new Date(now.getFullYear(), now.getMonth(), 1);
 }
 
 function isLeapYear(y) {
@@ -24,7 +19,7 @@ function daysInYear(y) {
 
 // Happiness slider gradient stops (must match .slider-happy CSS)
 const HAPP_STOPS = [
-  { t: 1,  r: 0xe0, g: 0x68, b: 0x58 },
+  { t: 1, r: 0xe0, g: 0x68, b: 0x58 },
   { t: 5.5, r: 0xe8, g: 0xa8, b: 0x38 },
   { t: 10, r: 0x6a, g: 0xb8, b: 0x48 },
 ];
@@ -48,29 +43,25 @@ function happinessToColor(h) {
   return `rgb(${r}, ${g}, ${b})`;
 }
 
-function buildDays() {
-  const startDate = getStartDate();
+function buildDays(birthday) {
+  if (!birthday) return [];
+  const bd = new Date(birthday + 'T00:00:00');
+  if (isNaN(bd.getTime())) return [];
   const todayStr = isoDate(new Date());
   const years = [];
 
-  for (let y = 0; y < YEARS; y++) {
-    const year = startDate.getFullYear() + y;
-    const yearStart = (y === 0)
-      ? new Date(startDate)
-      : new Date(year, 0, 1);
-    const yearEnd = new Date(year, 11, 31);
-    const total = daysInYear(year);
+  for (let y = 0; y < LIFE_YEARS; y++) {
+    const year = bd.getFullYear() + y;
+    const yearStart = new Date(year, bd.getMonth(), bd.getDate());
+    const total = daysInYear(yearStart.getFullYear());
+    // For year 0, start from birthday; otherwise from birthday month/day
     const days = [];
 
-    for (let d = 0; d < total; d++) {
+    for (let d = 0; d < 365; d++) {
       const dayDate = new Date(yearStart);
-      // For year 0, start from the actual month start
-      if (y === 0) {
-        // dayDate is already set to month start, offset by d
-        dayDate.setDate(startDate.getDate() + d);
-        if (dayDate.getFullYear() !== year) break;
-      } else {
-        dayDate.setDate(1 + d);
+      dayDate.setDate(yearStart.getDate() + d);
+      if (dayDate.getFullYear() !== yearStart.getFullYear() && d > 0) {
+        // crossed into next calendar year, but that's fine - we track by birthday anniversary
       }
 
       const dayStr = isoDate(dayDate);
@@ -80,20 +71,20 @@ function buildDays() {
 
       days.push({
         date: dayStr,
-        year,
         isPast,
         isFuture,
         isToday,
+        ageYear: y,
       });
     }
 
-    years.push({ year, days });
+    years.push({ yearLabel: `${year}`, yearIndex: y, days });
   }
 
   return years;
 }
 
-export default function MementoMori({ heatmapData }) {
+export default function MementoMori({ heatmapData, birthday }) {
   const happinessMap = useMemo(() => {
     const map = {};
     for (const d of heatmapData || []) {
@@ -102,10 +93,11 @@ export default function MementoMori({ heatmapData }) {
     return map;
   }, [heatmapData]);
 
-  const yearsData = useMemo(() => buildDays(), []);
+  const yearsData = useMemo(() => buildDays(birthday), [birthday]);
   const todayStr = isoDate(new Date());
-  const startDate = getStartDate();
-  const endYear = startDate.getFullYear() + YEARS - 1;
+
+  const bd = birthday ? new Date(birthday + 'T00:00:00') : null;
+  const endYear = bd ? bd.getFullYear() + LIFE_YEARS - 1 : null;
 
   const totalDays = yearsData.reduce((s, y) => s + y.days.length, 0);
   const livedDays = yearsData.reduce((s, y) => {
@@ -114,11 +106,22 @@ export default function MementoMori({ heatmapData }) {
   const remainingDays = totalDays - livedDays;
   const loggedDays = Object.keys(happinessMap).length;
 
+  if (!birthday || yearsData.length === 0) {
+    return (
+      <div className="card memento-card">
+        <h3 className="section-title">Memento Mori</h3>
+        <div className="empty-state">No birthday set. Sign up with a birthday to see your life grid.</div>
+      </div>
+    );
+  }
+
+  const bdFormatted = bd.toLocaleDateString('en-US', { day: 'numeric', month: 'long', year: 'numeric' });
+
   return (
     <div className="card memento-card">
       <h3 className="section-title">Memento Mori</h3>
       <p className="memento-intro">
-        Each square is one day. {YEARS} years from {startDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })} to {endYear}.
+        Each square is one day. {LIFE_YEARS} years from your birthday ({bdFormatted}) to {endYear}.
         Colored by your daily happiness.
       </p>
 
@@ -147,7 +150,7 @@ export default function MementoMori({ heatmapData }) {
       <div className="memento-days-scroll">
         {yearsData.map((yr, yi) => (
           <div key={yi} className="memento-year-row">
-            <span className="memento-year-label">{yr.year}</span>
+            <span className="memento-year-label">{yr.yearLabel}</span>
             <div className="memento-days-row">
               {yr.days.map((day, di) => {
                 const happiness = happinessMap[day.date];

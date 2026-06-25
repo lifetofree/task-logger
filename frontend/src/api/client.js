@@ -63,11 +63,11 @@ async function request(method, path, body) {
 export { ApiError };
 
 export const api = {
-  async signup(username, password) {
+  async signup(username, password, birthday) {
     const res = await fetch('/api/auth/signup', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ username, password }),
+      body: JSON.stringify({ username, password, birthday }),
     });
     if (!res.ok) {
       let message = 'Signup failed';
@@ -119,4 +119,5 @@ export const api = {
     const qs = year ? `?year=${year}` : '';
     return request('GET', `/api/insights/heatmap${qs}`);
   },
+  history: () => request('GET', '/api/history'),
 };

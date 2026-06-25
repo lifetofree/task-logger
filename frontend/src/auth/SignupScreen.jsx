@@ -7,6 +7,7 @@ export default function SignupScreen({ onSuccess, onSwitchToLogin }) {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [confirm, setConfirm] = useState('');
+  const [birthday, setBirthday] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -25,9 +26,13 @@ export default function SignupScreen({ onSuccess, onSwitchToLogin }) {
       setError('Passwords do not match.');
       return;
     }
+    if (!birthday) {
+      setError('Please enter your birthday.');
+      return;
+    }
     setLoading(true);
     try {
-      const data = await api.signup(username, password);
+      const data = await api.signup(username, password, birthday);
       setSession(data.token, data.user);
       onSuccess(data.user);
     } catch (err) {
@@ -78,6 +83,18 @@ export default function SignupScreen({ onSuccess, onSwitchToLogin }) {
             value={confirm}
             onChange={(e) => setConfirm(e.target.value)}
             autoComplete="new-password"
+            required
+          />
+        </div>
+        <div className="form-row">
+          <label htmlFor="signup-birthday">Birthday (for your Memento Mori)</label>
+          <input
+            id="signup-birthday"
+            className="input"
+            type="date"
+            value={birthday}
+            onChange={(e) => setBirthday(e.target.value)}
+            max={new Date().toISOString().slice(0, 10)}
             required
           />
         </div>

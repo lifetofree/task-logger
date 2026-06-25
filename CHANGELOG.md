@@ -5,6 +5,24 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [4.0.0] - 2026-06-25
+
+### Added
+- Birthday field in signup form. Used to calculate personal Memento Mori grid.
+- Memento Mori now spans 80 years from your birthday, day-by-day.
+- History tab: all entries grouped by month/year, ordered most recent first.
+- Bottom bar now fixed with copyright always visible below the tab buttons.
+- New API endpoint: `GET /api/history` returns all user entries.
+
+### Changed
+- Users table gains `birthday` column (YYYY-MM-DD).
+- Signup, login, and /me all return birthday in user object.
+- Three tabs: Today, History, Memento (was Today, Insights).
+- Footer copyright moved inside the fixed bottom bar.
+
+### Removed
+- Separate floating footer (copyright now in tab bar).
+
 ## [3.2.0] - 2026-06-25
 
 ### Changed

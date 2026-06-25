@@ -85,19 +85,15 @@ input, textarea, select {
 .view {
   flex: 1;
   padding: 20px;
-  padding-bottom: 80px;
+  padding-bottom: 140px;
 }
 
 .app-footer {
   text-align: center;
   font-size: 12px;
   color: var(--text-dim);
-  padding: 8px 20px 72px;
+  padding: 8px 20px;
   margin-top: auto;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 6px;
 }
 
 .update-banner {
@@ -162,11 +158,22 @@ input, textarea, select {
   right: 0;
   max-width: 720px;
   margin: 0 auto;
-  display: flex;
   background: var(--bg-elev);
   border-top: 1px solid var(--border);
   z-index: 10;
   padding-bottom: env(safe-area-inset-bottom);
+}
+
+.tab-bar-inner {
+  display: flex;
+}
+
+.tab-bar-copyright {
+  text-align: center;
+  font-size: 10px;
+  color: var(--text-dim);
+  padding: 4px 0 6px;
+  opacity: 0.6;
 }
 
 .tab-bar button {
@@ -828,4 +835,19 @@ input, textarea, select {
   margin: 16px 8px 0;
   line-height: 1.6;
   opacity: 0.8;
+}
+
+/* History */
+
+.history-month {
+  margin-bottom: 24px;
+}
+
+.history-month-header {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--accent);
+  margin: 0 0 10px 0;
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--border);
 }

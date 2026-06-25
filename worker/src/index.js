@@ -95,7 +95,7 @@ async function authenticate(request, env) {
   const result = await verifyJwt(match[1], env.JWT_SECRET);
   if (!result.ok) return { ok: false };
   const user = await env.DB
-    .prepare('SELECT id, username FROM users WHERE id = ?')
+    .prepare('SELECT id, username, birthday FROM users WHERE id = ?')
     .bind(result.userId)
     .first();
   if (!user) return { ok: false };
@@ -127,12 +127,15 @@ async function handleSignup(request, env) {
   } catch {
     return badRequest('Invalid JSON');
   }
-  const { username, password } = body;
+  const { username, password, birthday } = body;
   if (typeof username !== 'string' || !USERNAME_RE.test(username)) {
     return badRequest('Username must be 3-32 chars, lowercase letters/digits/underscore.');
   }
   if (typeof password !== 'string' || password.length < 8) {
     return badRequest('Password must be at least 8 characters.');
+  }
+  if (!isValidDateString(birthday)) {
+    return badRequest('Birthday must be a valid date (YYYY-MM-DD).');
   }
 
   const existing = await env.DB
@@ -145,15 +148,15 @@ async function handleSignup(request, env) {
   const passwordHash = await bcrypt.hash(password, BCRYPT_COST);
   try {
     await env.DB
-      .prepare('INSERT INTO users (id, username, password_hash) VALUES (?, ?, ?)')
-      .bind(id, username, passwordHash)
+      .prepare('INSERT INTO users (id, username, password_hash, birthday) VALUES (?, ?, ?, ?)')
+      .bind(id, username, passwordHash, birthday)
       .run();
   } catch (err) {
     if (String(err.message || '').includes('UNIQUE')) return conflict('Username is taken');
     throw err;
   }
   const token = await issueJwt(id, env.JWT_SECRET);
-  return jsonResponse({ success: true, token, user: { id, username } }, { status: 201 });
+  return jsonResponse({ success: true, token, user: { id, username, birthday } }, { status: 201 });
 }
 
 async function handleLogin(request, env) {
@@ -169,14 +172,14 @@ async function handleLogin(request, env) {
     return badRequest('Username and password required');
   }
   const row = await env.DB
-    .prepare('SELECT id, username, password_hash FROM users WHERE username = ?')
+    .prepare('SELECT id, username, password_hash, birthday FROM users WHERE username = ?')
     .bind(username)
     .first();
   if (!row) return unauthorized('Invalid username or password');
   const ok = await bcrypt.compare(password, row.password_hash);
   if (!ok) return unauthorized('Invalid username or password');
   const token = await issueJwt(row.id, env.JWT_SECRET);
-  return jsonResponse({ success: true, token, user: { id: row.id, username: row.username } });
+  return jsonResponse({ success: true, token, user: { id: row.id, username: row.username, birthday: row.birthday } });
 }
 
 async function handleMe(request, env, auth) {
@@ -192,6 +195,17 @@ async function handleListEntries(request, env, auth) {
   const { results } = await env.DB
     .prepare('SELECT * FROM entries WHERE user_id = ? AND log_date = ? ORDER BY created_at DESC')
     .bind(auth.user.id, date)
+    .all();
+  return jsonResponse(results.map(entryRow));
+}
+
+async function handleHistory(request, env, auth) {
+  if (request.method !== 'GET') return badRequest('GET required');
+  const { results } = await env.DB
+    .prepare(
+      `SELECT * FROM entries WHERE user_id = ? ORDER BY log_date DESC, created_at DESC`
+    )
+    .bind(auth.user.id)
     .all();
   return jsonResponse(results.map(entryRow));
 }
@@ -413,6 +427,7 @@ async function route(request, env) {
   if (path === '/api/insights/daily') return handleDaily(request, env, auth);
   if (path === '/api/insights/rollup') return handleRollup(request, env, auth);
   if (path === '/api/insights/heatmap') return handleHeatmap(request, env, auth);
+  if (path === '/api/history') return handleHistory(request, env, auth);
 
   return null;
 }

@@ -5,6 +5,7 @@ CREATE TABLE users (
   id TEXT PRIMARY KEY,
   username TEXT NOT NULL UNIQUE,
   password_hash TEXT NOT NULL,
+  birthday TEXT NOT NULL DEFAULT '1983-09-11',
   created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
