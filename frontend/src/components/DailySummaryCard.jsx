@@ -19,8 +19,6 @@ export default function DailySummaryCard({ entries }) {
     entries.reduce((sum, e) => sum + e.happiness, 0) / count;
   const avgProgress =
     entries.reduce((sum, e) => sum + e.progress, 0) / count;
-  const completed = entries.filter((e) => e.progress === 10).length;
-  const successRate = Math.round((completed / count) * 100);
 
   return (
     <div className="card">
@@ -37,10 +35,6 @@ export default function DailySummaryCard({ entries }) {
         <div className="summary-stat">
           <span className="value">{formatNumber(avgProgress)}</span>
           <span className="label">Avg Progress</span>
-        </div>
-        <div className="summary-stat" style={{ gridColumn: '1 / -1' }}>
-          <span className="value">{successRate}%</span>
-          <span className="label">Success Rate</span>
         </div>
       </div>
     </div>

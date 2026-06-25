@@ -704,3 +704,140 @@ input, textarea, select {
 @keyframes spin {
   to { transform: rotate(360deg); }
 }
+
+/* Memento Mori */
+
+.memento-card {
+  padding: 20px 16px;
+}
+
+.memento-intro {
+  font-size: 13px;
+  color: var(--text-dim);
+  margin: 0 0 16px 0;
+  line-height: 1.5;
+}
+
+.memento-stats {
+  display: flex;
+  justify-content: center;
+  gap: 32px;
+  margin-bottom: 20px;
+}
+
+.memento-stat {
+  text-align: center;
+}
+
+.memento-stat-num {
+  display: block;
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--accent);
+}
+
+.memento-stat-label {
+  font-size: 11px;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.memento-grid {
+  overflow-x: auto;
+  padding: 4px 0 12px 0;
+}
+
+.memento-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 3px;
+}
+
+.memento-year-label {
+  font-size: 10px;
+  color: var(--text-dim);
+  width: 34px;
+  flex-shrink: 0;
+  text-align: right;
+}
+
+.memento-weeks {
+  display: flex;
+  gap: 2px;
+}
+
+.memento-cell {
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+  flex-shrink: 0;
+  transition: transform 0.1s;
+}
+
+.memento-cell.lived {
+  background: var(--bg-elev-2);
+}
+
+.memento-cell.logged.level-1 { background: #d4b080; }
+.memento-cell.logged.level-2 { background: #c89858; }
+.memento-cell.logged.level-3 { background: #b86020; }
+.memento-cell.logged.level-4 { background: #964e18; }
+.memento-cell.logged.level-5 { background: #6e3810; }
+
+.memento-cell.future {
+  background: transparent;
+  border: 1px solid var(--border);
+  opacity: 0.35;
+  width: 8px;
+  height: 8px;
+}
+
+.memento-cell.this-week {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
+.memento-cell:not(.future):hover {
+  transform: scale(1.4);
+  z-index: 5;
+}
+
+.memento-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-top: 16px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border);
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  color: var(--text-dim);
+}
+
+.legend-swatch {
+  width: 12px;
+  height: 12px;
+  border-radius: 2px;
+}
+
+.legend-swatch.lived { background: var(--bg-elev-2); }
+.legend-swatch.level-3 { background: #b86020; }
+.legend-swatch.future { background: transparent; border: 1px solid var(--border); opacity: 0.35; width: 10px; height: 10px; }
+.legend-swatch.this-week { background: var(--bg-elev-2); outline: 2px solid var(--accent); outline-offset: 1px; }
+
+.memento-quote {
+  font-size: 13px;
+  font-style: italic;
+  color: var(--text-dim);
+  text-align: center;
+  margin: 16px 8px 0;
+  line-height: 1.6;
+  opacity: 0.8;
+}

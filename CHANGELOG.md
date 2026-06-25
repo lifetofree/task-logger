@@ -5,6 +5,21 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.0.0] - 2026-06-25
+
+### Changed
+- Insights tab completely redesigned as a Memento Mori visualization.
+- Shows a 40-year grid (2,080 weeks) starting from this month, each cell = 1 week.
+- Lived weeks (past): filled neutral tone. Logged weeks: colored by score.
+- Future weeks: outlined/empty. Current week: highlighted with accent border.
+- Stats show weeks passed vs weeks ahead.
+- Includes Stoic quote: "You could leave life right now..."
+
+### Removed
+- Success rate removed from Daily Summary card.
+- Trend chart, rollup cards, and activity heatmap removed from Insights.
+- RollupCard component no longer used.
+
 ## [2.2.0] - 2026-06-24
 
 ### Changed
