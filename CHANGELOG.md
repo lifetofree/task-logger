@@ -5,6 +5,42 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [4.6.0] - 2026-06-26
+
+### Fixed
+- Timezone: all date calculations now use GMT+7 instead of UTC. Dates
+  were showing as the previous day in GMT+7 (worker, EntryForm, TodayView,
+  HistoryView, insights queries).
+
+## [4.5.2] - 2026-06-26
+
+### Changed
+- Future days in Memento Mori now visible with soft light background,
+  border, and rounded corners (50% opacity) instead of nearly invisible.
+
+## [4.5.1] - 2026-06-26
+
+### Changed
+- PWA registerType changed from 'prompt' to 'autoUpdate' to force
+  automatic version refresh.
+
+## [4.5.0] - 2026-06-26
+
+### Added
+- Registration limit: max 50 users (owner excluded from count).
+  51st signup attempt returns 403.
+
+## [4.4.2] - 2026-06-25
+
+### Fixed
+- Memento Mori scroll: fixed broken rAF cleanup logic, replaced with
+  state-driven scroll using todayRowIndex.
+
+## [4.4.1] - 2026-06-25
+
+### Fixed
+- Memento Mori scroll timing: added rAF + double timeout for DOM layout.
+
 ## [4.4.0] - 2026-06-25
 
 ### Changed
