@@ -721,8 +721,8 @@ input, textarea, select {
 .memento-stats {
   display: flex;
   justify-content: center;
-  gap: 32px;
-  margin-bottom: 20px;
+  gap: 24px;
+  margin-bottom: 16px;
 }
 
 .memento-stat {
@@ -731,106 +731,94 @@ input, textarea, select {
 
 .memento-stat-num {
   display: block;
-  font-size: 28px;
+  font-size: 22px;
   font-weight: 700;
   color: var(--accent);
 }
 
 .memento-stat-label {
-  font-size: 11px;
+  font-size: 10px;
   color: var(--text-dim);
   text-transform: uppercase;
   letter-spacing: 0.05em;
 }
 
-.memento-grid {
-  overflow-x: auto;
-  padding: 4px 0 12px 0;
-}
-
-.memento-row {
+.memento-happiness-legend {
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 6px;
-  margin-bottom: 3px;
-}
-
-.memento-year-label {
-  font-size: 10px;
-  color: var(--text-dim);
-  width: 34px;
-  flex-shrink: 0;
-  text-align: right;
-}
-
-.memento-weeks {
-  display: flex;
-  gap: 2px;
-}
-
-.memento-cell {
-  width: 10px;
-  height: 10px;
-  border-radius: 2px;
-  flex-shrink: 0;
-  transition: transform 0.1s;
-}
-
-.memento-cell.lived {
-  background: var(--bg-elev-2);
-}
-
-.memento-cell.logged.level-1 { background: #d4b080; }
-.memento-cell.logged.level-2 { background: #c89858; }
-.memento-cell.logged.level-3 { background: #b86020; }
-.memento-cell.logged.level-4 { background: #964e18; }
-.memento-cell.logged.level-5 { background: #6e3810; }
-
-.memento-cell.future {
-  background: transparent;
-  border: 1px solid var(--border);
-  opacity: 0.35;
-  width: 8px;
-  height: 8px;
-}
-
-.memento-cell.this-week {
-  outline: 2px solid var(--accent);
-  outline-offset: 1px;
-}
-
-.memento-cell:not(.future):hover {
-  transform: scale(1.4);
-  z-index: 5;
-}
-
-.memento-legend {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 16px;
-  margin-top: 16px;
-  padding-top: 12px;
-  border-top: 1px solid var(--border);
-}
-
-.legend-item {
-  display: flex;
-  align-items: center;
-  gap: 6px;
+  margin-bottom: 16px;
   font-size: 11px;
   color: var(--text-dim);
 }
 
-.legend-swatch {
-  width: 12px;
-  height: 12px;
-  border-radius: 2px;
+.memento-happiness-legend .legend-text {
+  white-space: nowrap;
 }
 
-.legend-swatch.lived { background: var(--bg-elev-2); }
-.legend-swatch.level-3 { background: #b86020; }
-.legend-swatch.future { background: transparent; border: 1px solid var(--border); opacity: 0.35; width: 10px; height: 10px; }
-.legend-swatch.this-week { background: var(--bg-elev-2); outline: 2px solid var(--accent); outline-offset: 1px; }
+.memento-happiness-legend .legend-bar {
+  width: 100px;
+  height: 8px;
+  border-radius: 4px;
+  background: linear-gradient(to right, #e8d4b0, #d4a056, #b86020, #6e3810);
+}
+
+.memento-days-scroll {
+  overflow-x: auto;
+  padding: 4px 0 12px 0;
+  -webkit-overflow-scrolling: touch;
+}
+
+.memento-year-row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-bottom: 2px;
+}
+
+.memento-year-label {
+  font-size: 9px;
+  color: var(--text-dim);
+  width: 28px;
+  flex-shrink: 0;
+  text-align: right;
+}
+
+.memento-days-row {
+  display: flex;
+  gap: 1px;
+}
+
+.mm-day {
+  width: 4px;
+  height: 14px;
+  flex-shrink: 0;
+  border-radius: 1px;
+  transition: transform 0.1s;
+}
+
+.mm-day.lived {
+  background: var(--bg-elev-2);
+  opacity: 0.4;
+}
+
+.mm-day.future {
+  background: transparent;
+  opacity: 0.15;
+}
+
+.mm-day.today {
+  outline: 2px solid var(--accent);
+  outline-offset: 0px;
+  border-radius: 2px;
+  z-index: 2;
+}
+
+.mm-day:hover {
+  transform: scaleY(1.3);
+  z-index: 5;
+}
 
 .memento-quote {
   font-size: 13px;

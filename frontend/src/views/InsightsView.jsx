@@ -11,9 +11,15 @@ export default function InsightsView() {
     setLoading(true);
     setError('');
     try {
-      const year = new Date().getFullYear();
-      const heatmapRes = await api.heatmap(year);
-      setHeatmapData(heatmapRes);
+      const currentYear = new Date().getFullYear();
+      // Fetch current year and next 39 years of data
+      const promises = [];
+      for (let y = 0; y < 40; y++) {
+        promises.push(api.heatmap(currentYear + y));
+      }
+      const results = await Promise.all(promises);
+      const merged = results.flat();
+      setHeatmapData(merged);
     } catch (err) {
       setError(err.message);
     } finally {

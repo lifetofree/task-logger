@@ -5,6 +5,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.1.0] - 2026-06-25
+
+### Changed
+- Memento Mori now shows day-by-day (not weeks): 14,600+ cells across 40 years.
+- Each day colored by average happiness (warm gradient: pale to deep amber).
+- Heatmap API returns avg happiness and progress separately (was combined score).
+- InsightsView fetches 40 years of data from the API.
+- Day cells are 4px wide strips, one row per year, horizontally scrollable.
+- Stats show days lived, days ahead, and days logged.
+- Happiness legend bar (1-10 gradient) above the grid.
+
 ## [3.0.0] - 2026-06-25
 
 ### Changed

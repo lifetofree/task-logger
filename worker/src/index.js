@@ -365,7 +365,8 @@ async function handleHeatmap(request, env, auth) {
   const { results } = await env.DB
     .prepare(
       `SELECT log_date AS date,
-              AVG((happiness + progress) / 2.0) AS day_score,
+              AVG(happiness) AS avg_happiness,
+              AVG(progress) AS avg_progress,
               COUNT(*) AS count
          FROM entries
         WHERE user_id = ? AND log_date BETWEEN ? AND ?
@@ -376,7 +377,8 @@ async function handleHeatmap(request, env, auth) {
   return jsonResponse(
     results.map((r) => ({
       date: r.date,
-      score: r.day_score == null ? null : Math.round(r.day_score * 100) / 100,
+      happiness: r.avg_happiness == null ? null : Math.round(r.avg_happiness * 100) / 100,
+      progress: r.avg_progress == null ? null : Math.round(r.avg_progress * 100) / 100,
       count: r.count,
     }))
   );

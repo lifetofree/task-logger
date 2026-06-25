@@ -1,138 +1,164 @@
 import React, { useMemo } from 'react';
 
-const WEEKS_PER_YEAR = 52;
 const YEARS = 40;
 
-function weekStartDate(year, weekIndex) {
-  const jan1 = new Date(year, 0, 1);
-  const dayOfYear = weekIndex * 7;
-  const d = new Date(year, 0, 1 + dayOfYear);
-  return d;
-}
-
 function isoDate(d) {
-  return d.toISOString().slice(0, 10);
+  const yr = d.getFullYear();
+  const mo = String(d.getMonth() + 1).padStart(2, '0');
+  const dy = String(d.getDate()).padStart(2, '0');
+  return `${yr}-${mo}-${dy}`;
 }
 
-function scoreToLevel(score) {
-  if (score == null) return null;
-  if (score >= 9) return 5;
-  if (score >= 7.5) return 4;
-  if (score >= 6) return 3;
-  if (score >= 4.5) return 2;
-  if (score >= 3) return 1;
-  return 1;
-}
-
-function getStartMonth() {
+function getStartDate() {
   const now = new Date();
   return new Date(now.getFullYear(), now.getMonth(), 1);
 }
 
-function buildWeeks() {
-  const startMonth = getStartMonth();
-  const startYear = startMonth.getFullYear();
+function isLeapYear(y) {
+  return (y % 4 === 0 && y % 100 !== 0) || y % 400 === 0;
+}
+
+function daysInYear(y) {
+  return isLeapYear(y) ? 366 : 365;
+}
+
+function happinessToColor(h) {
+  if (h == null) return null;
+  // 1-10 scale mapped to warm earth tone gradient
+  // low = pale/empty, high = deep amber
+  if (h >= 9) return '#6e3810';
+  if (h >= 8) return '#8a4818';
+  if (h >= 7) return '#a05820';
+  if (h >= 6) return '#b86020';
+  if (h >= 5) return '#c87830';
+  if (h >= 4) return '#d49048';
+  if (h >= 3) return '#dca868';
+  if (h >= 2) return '#e4c090';
+  return '#e8d4b0';
+}
+
+function buildDays() {
+  const startDate = getStartDate();
   const todayStr = isoDate(new Date());
+  const years = [];
 
-  const weeks = [];
   for (let y = 0; y < YEARS; y++) {
-    const year = startYear + y;
-    const yearWeeks = [];
-    for (let w = 0; w < WEEKS_PER_YEAR; w++) {
-      const weekStart = weekStartDate(year, w);
-      const weekStartStr = isoDate(weekStart);
-      const isPast = weekStartStr < todayStr;
-      const isFuture = weekStartStr > todayStr;
-      const isThisWeek = !isPast && !isFuture;
+    const year = startDate.getFullYear() + y;
+    const yearStart = (y === 0)
+      ? new Date(startDate)
+      : new Date(year, 0, 1);
+    const yearEnd = new Date(year, 11, 31);
+    const total = daysInYear(year);
+    const days = [];
 
-      // Only include weeks from the start of this month in year 0
-      if (y === 0 && weekStart < startMonth) {
-        yearWeeks.push(null);
-        continue;
+    for (let d = 0; d < total; d++) {
+      const dayDate = new Date(yearStart);
+      // For year 0, start from the actual month start
+      if (y === 0) {
+        // dayDate is already set to month start, offset by d
+        dayDate.setDate(startDate.getDate() + d);
+        if (dayDate.getFullYear() !== year) break;
+      } else {
+        dayDate.setDate(1 + d);
       }
 
-      yearWeeks.push({
-        date: weekStartStr,
+      const dayStr = isoDate(dayDate);
+      const isPast = dayStr < todayStr;
+      const isFuture = dayStr > todayStr;
+      const isToday = dayStr === todayStr;
+
+      days.push({
+        date: dayStr,
         year,
-        weekIndex: w,
         isPast,
         isFuture,
-        isThisWeek,
+        isToday,
       });
     }
-    weeks.push({ year, weeks: yearWeeks });
+
+    years.push({ year, days });
   }
-  return weeks;
+
+  return years;
 }
 
 export default function MementoMori({ heatmapData }) {
-  const scoreMap = useMemo(() => {
+  const happinessMap = useMemo(() => {
     const map = {};
     for (const d of heatmapData || []) {
-      map[d.date] = d.score;
+      map[d.date] = d.happiness;
     }
     return map;
   }, [heatmapData]);
 
-  const years = useMemo(() => buildWeeks(), []);
+  const yearsData = useMemo(() => buildDays(), []);
   const todayStr = isoDate(new Date());
-  const startMonth = getStartMonth();
-  const endDate = new Date(startMonth.getFullYear() + YEARS - 1, 11, 31);
+  const startDate = getStartDate();
+  const endYear = startDate.getFullYear() + YEARS - 1;
 
-  const totalWeeks = YEARS * WEEKS_PER_YEAR;
-  const livedWeeks = years.reduce((sum, yr) => {
-    return sum + yr.weeks.filter((w) => w && (w.isPast || w.isThisWeek)).length;
+  const totalDays = yearsData.reduce((s, y) => s + y.days.length, 0);
+  const livedDays = yearsData.reduce((s, y) => {
+    return s + y.days.filter((d) => d.isPast || d.isToday).length;
   }, 0);
-  const remainingWeeks = totalWeeks - livedWeeks;
+  const remainingDays = totalDays - livedDays;
+  const loggedDays = Object.keys(happinessMap).length;
 
   return (
     <div className="card memento-card">
       <h3 className="section-title">Memento Mori</h3>
       <p className="memento-intro">
-        Each square is one week. This grid shows the next {YEARS} years,
-        from {startMonth.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })} to {endDate.getFullYear()}.
+        Each square is one day. {YEARS} years from {startDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })} to {endYear}.
+        Colored by your daily happiness.
       </p>
 
       <div className="memento-stats">
         <div className="memento-stat">
-          <span className="memento-stat-num">{livedWeeks}</span>
-          <span className="memento-stat-label">weeks passed</span>
+          <span className="memento-stat-num">{livedDays.toLocaleString()}</span>
+          <span className="memento-stat-label">days lived</span>
         </div>
         <div className="memento-stat">
-          <span className="memento-stat-num">{remainingWeeks}</span>
-          <span className="memento-stat-label">weeks ahead</span>
+          <span className="memento-stat-num">{remainingDays.toLocaleString()}</span>
+          <span className="memento-stat-label">days ahead</span>
+        </div>
+        <div className="memento-stat">
+          <span className="memento-stat-num">{loggedDays}</span>
+          <span className="memento-stat-label">days logged</span>
         </div>
       </div>
 
-      <div className="memento-grid" role="img" aria-label="Life in weeks grid">
-        {years.map((yr, yi) => (
-          <div key={yi} className="memento-row">
+      <div className="memento-happiness-legend">
+        <span className="legend-text">Happiness:</span>
+        <div className="legend-bar" />
+        <span className="legend-text">1</span>
+        <span className="legend-text">10</span>
+      </div>
+
+      <div className="memento-days-scroll">
+        {yearsData.map((yr, yi) => (
+          <div key={yi} className="memento-year-row">
             <span className="memento-year-label">{yr.year}</span>
-            <div className="memento-weeks">
-              {yr.weeks.map((wk, wi) => {
-                if (!wk) {
-                  return <div key={wi} className="memento-cell empty-slot" style={{ visibility: 'hidden' }} />;
-                }
-                const score = scoreMap[wk.date];
-                const level = scoreToLevel(score);
-                const hasData = score != null;
-                const classes = ['memento-cell'];
-                if (wk.isFuture) classes.push('future');
-                else if (hasData) classes.push('logged');
-                else if (wk.isPast || wk.isThisWeek) classes.push('lived');
-                if (wk.isThisWeek) classes.push('this-week');
-                if (level != null) classes.push(`level-${level}`);
+            <div className="memento-days-row">
+              {yr.days.map((day, di) => {
+                const happiness = happinessMap[day.date];
+                const hasData = happiness != null;
+                const bg = hasData ? happinessToColor(happiness) : undefined;
+
+                const classes = ['mm-day'];
+                if (day.isToday) classes.push('today');
+                else if (day.isFuture) classes.push('future');
+                else if (!hasData) classes.push('lived');
 
                 return (
                   <div
-                    key={wi}
+                    key={di}
                     className={classes.join(' ')}
+                    style={bg ? { background: bg } : undefined}
                     title={
                       hasData
-                        ? `${wk.date}: score ${score.toFixed(1)}`
-                        : wk.isFuture
-                          ? `${wk.date} (future)`
-                          : wk.date
+                        ? `${day.date}: happiness ${happiness.toFixed(1)}/10`
+                        : day.isFuture
+                          ? `${day.date} (future)`
+                          : `${day.date} (no entry)`
                     }
                   />
                 );
@@ -140,25 +166,6 @@ export default function MementoMori({ heatmapData }) {
             </div>
           </div>
         ))}
-      </div>
-
-      <div className="memento-legend">
-        <div className="legend-item">
-          <div className="legend-swatch lived" />
-          <span>Lived</span>
-        </div>
-        <div className="legend-item">
-          <div className="legend-swatch level-3" />
-          <span>Logged</span>
-        </div>
-        <div className="legend-item">
-          <div className="legend-swatch future" />
-          <span>Future</span>
-        </div>
-        <div className="legend-item">
-          <div className="legend-swatch this-week" />
-          <span>Now</span>
-        </div>
       </div>
 
       <p className="memento-quote">
