@@ -5,6 +5,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [4.4.0] - 2026-06-25
+
+### Changed
+- History: shows only last 7 days by default; older entries require search.
+- Search filters by task name, date, happiness, or progress value.
+- Memento Mori: grid now 70vh tall so 9 rows before today + today row
+  are visible on load without scrolling. Instant scroll for correct position.
+
 ## [4.3.0] - 2026-06-25
 
 ### Changed

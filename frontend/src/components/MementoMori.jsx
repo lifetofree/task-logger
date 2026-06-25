@@ -120,9 +120,10 @@ export default function MementoMori({ heatmapData, birthday }) {
     if (todayRowRef.current && gridRef.current) {
       const grid = gridRef.current;
       const row = todayRowRef.current;
-      // Position today's row 9 rows from the top of the viewport
-      const scrollTop = row.offsetTop - row.clientHeight * 9;
-      grid.scrollTo({ top: Math.max(0, scrollTop), behavior: 'smooth' });
+      // Scroll so 9 rows before today are at the top, today row is visible without scrolling
+      // row.offsetTop is relative to scroll content; we want today's row 10th from top
+      const targetTop = row.offsetTop - row.clientHeight * 9;
+      grid.scrollTop = Math.max(0, targetTop);
     }
   }, [allDays.length]);
 

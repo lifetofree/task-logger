@@ -790,10 +790,9 @@ input, textarea, select {
 .memento-days-scroll {
   overflow-y: auto;
   overflow-x: auto;
-  max-height: 50vh;
+  max-height: 70vh;
   padding: 4px 0;
   -webkit-overflow-scrolling: touch;
-  scroll-behavior: smooth;
 }
 
 .mm-row {
