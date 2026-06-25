@@ -120,8 +120,9 @@ export default function MementoMori({ heatmapData, birthday }) {
     if (todayRowRef.current && gridRef.current) {
       const grid = gridRef.current;
       const row = todayRowRef.current;
-      const scrollTop = row.offsetTop - grid.clientHeight / 2 + row.clientHeight / 2;
-      grid.scrollTo({ top: scrollTop, behavior: 'smooth' });
+      // Position today's row 9 rows from the top of the viewport
+      const scrollTop = row.offsetTop - row.clientHeight * 9;
+      grid.scrollTo({ top: Math.max(0, scrollTop), behavior: 'smooth' });
     }
   }, [allDays.length]);
 
