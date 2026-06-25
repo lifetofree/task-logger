@@ -1,4 +1,4 @@
-import React, { useMemo, useRef, useEffect } from 'react';
+import React, { useMemo, useRef, useEffect, useState } from 'react';
 
 const LIFE_YEARS = 80;
 const DAYS_PER_ROW = 28; // 4 weeks per row
@@ -115,26 +115,30 @@ export default function MementoMori({ heatmapData, birthday }) {
   // Auto-scroll to show 9 rows before today + today row
   const gridRef = useRef(null);
   const todayRowRef = useRef(null);
+  const [dataReady, setDataReady] = useState(false);
 
   useEffect(() => {
-    // Use rAF + timeout to ensure DOM layout is complete for ~1000 rows
-    function scrollToToday() {
-      if (todayRowRef.current && gridRef.current) {
-        const grid = gridRef.current;
-        const row = todayRowRef.current;
-        const targetTop = row.offsetTop - row.clientHeight * 9;
-        grid.scrollTop = Math.max(0, targetTop);
-      }
+    // Mark ready after data loads to trigger scroll
+    if (allDays.length > 0 && heatmapData !== undefined) {
+      const t = setTimeout(() => setDataReady(true), 150);
+      return () => clearTimeout(t);
     }
-
-    const raf = requestAnimationFrame(() => {
-      const timer = setTimeout(scrollToToday, 50);
-      // Second pass in case layout was slow
-      const timer2 = setTimeout(scrollToToday, 200);
-      return () => { clearTimeout(timer); clearTimeout(timer2); };
-    });
-    return () => cancelAnimationFrame(raf);
   }, [allDays.length, heatmapData]);
+
+  useEffect(() => {
+    if (!dataReady) return;
+    if (todayRowIndex < 0) return;
+
+    // Compute scroll position from row index directly
+    // Each row has fixed height = cell height + 2px gap
+    // We want today's row to be the 10th visible row (9 rows above it)
+    const cellEl = gridRef.current?.querySelector('.mm-row');
+    if (!cellEl || !gridRef.current) return;
+
+    const rowHeight = cellEl.offsetHeight + 2; // 2px margin-bottom
+    const targetTop = todayRowIndex * rowHeight - rowHeight * 9;
+    gridRef.current.scrollTop = Math.max(0, targetTop);
+  }, [dataReady, todayRowIndex]);
 
   if (!birthday || allDays.length === 0) {
     return (
