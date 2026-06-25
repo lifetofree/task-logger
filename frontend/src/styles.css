@@ -816,8 +816,10 @@ input, textarea, select {
 }
 
 .mm-day.future {
-  background: transparent;
-  opacity: 0.15;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  opacity: 0.5;
+  border-radius: 3px;
 }
 
 .mm-day.today {
