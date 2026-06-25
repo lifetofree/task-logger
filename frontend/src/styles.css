@@ -712,24 +712,40 @@ input, textarea, select {
   to { transform: rotate(360deg); }
 }
 
-/* Memento Mori */
+/* Memento Mori - 3 block layout */
+
+.memento-top {
+  padding: 16px;
+  margin-bottom: 12px;
+}
+
+.memento-center {
+  padding: 12px 8px;
+  margin-bottom: 12px;
+}
+
+.memento-bottom {
+  padding: 16px;
+  text-align: center;
+}
 
 .memento-card {
   padding: 20px 16px;
 }
 
 .memento-intro {
-  font-size: 13px;
+  font-size: 12px;
   color: var(--text-dim);
-  margin: 0 0 16px 0;
+  margin: 0 0 12px 0;
+  text-align: center;
   line-height: 1.5;
 }
 
 .memento-stats {
   display: flex;
-  justify-content: center;
-  gap: 24px;
-  margin-bottom: 16px;
+  justify-content: space-around;
+  gap: 8px;
+  margin-bottom: 12px;
 }
 
 .memento-stat {
@@ -754,8 +770,8 @@ input, textarea, select {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
-  margin-bottom: 16px;
+  gap: 8px;
+  margin-top: 8px;
   font-size: 11px;
   color: var(--text-dim);
 }
@@ -772,9 +788,12 @@ input, textarea, select {
 }
 
 .memento-days-scroll {
+  overflow-y: auto;
   overflow-x: auto;
-  padding: 4px 0 12px 0;
+  max-height: 50vh;
+  padding: 4px 0;
   -webkit-overflow-scrolling: touch;
+  scroll-behavior: smooth;
 }
 
 .memento-year-row {

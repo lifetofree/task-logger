@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useRef, useEffect } from 'react';
 
 const LIFE_YEARS = 80;
 
@@ -7,14 +7,6 @@ function isoDate(d) {
   const mo = String(d.getMonth() + 1).padStart(2, '0');
   const dy = String(d.getDate()).padStart(2, '0');
   return `${yr}-${mo}-${dy}`;
-}
-
-function isLeapYear(y) {
-  return (y % 4 === 0 && y % 100 !== 0) || y % 400 === 0;
-}
-
-function daysInYear(y) {
-  return isLeapYear(y) ? 366 : 365;
 }
 
 // Happiness slider gradient stops (must match .slider-happy CSS)
@@ -37,10 +29,7 @@ function happinessToColor(h) {
   const s1 = HAPP_STOPS[i + 1] || s0;
   const range = s1.t - s0.t || 1;
   const localT = (clamped - s0.t) / range;
-  const r = lerp(s0.r, s1.r, localT);
-  const g = lerp(s0.g, s1.g, localT);
-  const b = lerp(s0.b, s1.b, localT);
-  return `rgb(${r}, ${g}, ${b})`;
+  return `rgb(${lerp(s0.r, s1.r, localT)}, ${lerp(s0.g, s1.g, localT)}, ${lerp(s0.b, s1.b, localT)})`;
 }
 
 function buildDays(birthday) {
@@ -51,36 +40,21 @@ function buildDays(birthday) {
   const years = [];
 
   for (let y = 0; y < LIFE_YEARS; y++) {
-    const year = bd.getFullYear() + y;
-    const yearStart = new Date(year, bd.getMonth(), bd.getDate());
-    const total = daysInYear(yearStart.getFullYear());
-    // For year 0, start from birthday; otherwise from birthday month/day
+    const yearStart = new Date(bd.getFullYear() + y, bd.getMonth(), bd.getDate());
     const days = [];
-
     for (let d = 0; d < 365; d++) {
       const dayDate = new Date(yearStart);
       dayDate.setDate(yearStart.getDate() + d);
-      if (dayDate.getFullYear() !== yearStart.getFullYear() && d > 0) {
-        // crossed into next calendar year, but that's fine - we track by birthday anniversary
-      }
-
       const dayStr = isoDate(dayDate);
-      const isPast = dayStr < todayStr;
-      const isFuture = dayStr > todayStr;
-      const isToday = dayStr === todayStr;
-
       days.push({
         date: dayStr,
-        isPast,
-        isFuture,
-        isToday,
-        ageYear: y,
+        isPast: dayStr < todayStr,
+        isFuture: dayStr > todayStr,
+        isToday: dayStr === todayStr,
       });
     }
-
-    years.push({ yearLabel: `${year}`, yearIndex: y, days });
+    years.push({ yearLabel: `${yearStart.getFullYear()}`, yearIndex: y, days });
   }
-
   return years;
 }
 
@@ -94,7 +68,6 @@ export default function MementoMori({ heatmapData, birthday }) {
   }, [heatmapData]);
 
   const yearsData = useMemo(() => buildDays(birthday), [birthday]);
-  const todayStr = isoDate(new Date());
 
   const bd = birthday ? new Date(birthday + 'T00:00:00') : null;
   const endYear = bd ? bd.getFullYear() + LIFE_YEARS - 1 : null;
@@ -105,6 +78,25 @@ export default function MementoMori({ heatmapData, birthday }) {
   }, 0);
   const remainingDays = totalDays - livedDays;
   const loggedDays = Object.keys(happinessMap).length;
+
+  // Calculate average happiness from logged days
+  const happinessValues = Object.values(happinessMap).filter((v) => v != null);
+  const avgHappiness = happinessValues.length > 0
+    ? happinessValues.reduce((s, v) => s + v, 0) / happinessValues.length
+    : null;
+
+  // Auto-scroll to current year row
+  const gridRef = useRef(null);
+  const todayRowRef = useRef(null);
+
+  useEffect(() => {
+    if (todayRowRef.current && gridRef.current) {
+      const grid = gridRef.current;
+      const row = todayRowRef.current;
+      const scrollTop = row.offsetTop - grid.clientHeight / 2 + row.clientHeight / 2;
+      grid.scrollTo({ top: scrollTop, behavior: 'smooth' });
+    }
+  }, [yearsData.length]);
 
   if (!birthday || yearsData.length === 0) {
     return (
@@ -118,73 +110,84 @@ export default function MementoMori({ heatmapData, birthday }) {
   const bdFormatted = bd.toLocaleDateString('en-US', { day: 'numeric', month: 'long', year: 'numeric' });
 
   return (
-    <div className="card memento-card">
-      <h3 className="section-title">Memento Mori</h3>
-      <p className="memento-intro">
-        Each square is one day. {LIFE_YEARS} years from your birthday ({bdFormatted}) to {endYear}.
-        Colored by your daily happiness.
-      </p>
-
-      <div className="memento-stats">
-        <div className="memento-stat">
-          <span className="memento-stat-num">{livedDays.toLocaleString()}</span>
-          <span className="memento-stat-label">days lived</span>
-        </div>
-        <div className="memento-stat">
-          <span className="memento-stat-num">{remainingDays.toLocaleString()}</span>
-          <span className="memento-stat-label">days ahead</span>
-        </div>
-        <div className="memento-stat">
-          <span className="memento-stat-num">{loggedDays}</span>
-          <span className="memento-stat-label">days logged</span>
-        </div>
-      </div>
-
-      <div className="memento-happiness-legend">
-        <span className="legend-text">Happiness:</span>
-        <div className="legend-bar" />
-        <span className="legend-text">1</span>
-        <span className="legend-text">10</span>
-      </div>
-
-      <div className="memento-days-scroll">
-        {yearsData.map((yr, yi) => (
-          <div key={yi} className="memento-year-row">
-            <span className="memento-year-label">{yr.yearLabel}</span>
-            <div className="memento-days-row">
-              {yr.days.map((day, di) => {
-                const happiness = happinessMap[day.date];
-                const hasData = happiness != null;
-                const bg = hasData ? happinessToColor(happiness) : undefined;
-
-                const classes = ['mm-day'];
-                if (day.isToday) classes.push('today');
-                else if (day.isFuture) classes.push('future');
-                else if (!hasData) classes.push('lived');
-
-                return (
-                  <div
-                    key={di}
-                    className={classes.join(' ')}
-                    style={bg ? { background: bg } : undefined}
-                    title={
-                      hasData
-                        ? `${day.date}: happiness ${happiness.toFixed(1)}/10`
-                        : day.isFuture
-                          ? `${day.date} (future)`
-                          : `${day.date} (no entry)`
-                    }
-                  />
-                );
-              })}
-            </div>
+    <>
+      {/* TOP BLOCK: Stats */}
+      <div className="card memento-top">
+        <div className="memento-stats">
+          <div className="memento-stat">
+            <span className="memento-stat-num">{livedDays.toLocaleString()}</span>
+            <span className="memento-stat-label">days lived</span>
           </div>
-        ))}
+          <div className="memento-stat">
+            <span className="memento-stat-num">{remainingDays.toLocaleString()}</span>
+            <span className="memento-stat-label">days ahead</span>
+          </div>
+          <div className="memento-stat">
+            <span className="memento-stat-num">{avgHappiness != null ? avgHappiness.toFixed(1) : '—'}</span>
+            <span className="memento-stat-label">avg happiness</span>
+          </div>
+        </div>
+        <p className="memento-intro">
+          {LIFE_YEARS} years from {bdFormatted} to {endYear}. Colored by happiness.
+        </p>
+        <div className="memento-happiness-legend">
+          <span className="legend-text">1</span>
+          <div className="legend-bar" />
+          <span className="legend-text">10</span>
+        </div>
       </div>
 
-      <p className="memento-quote">
-        "You could leave life right now. Let that determine what you do and say and think."
-      </p>
-    </div>
+      {/* CENTER BLOCK: Grid */}
+      <div className="card memento-center">
+        <div className="memento-days-scroll" ref={gridRef}>
+          {yearsData.map((yr, yi) => {
+            const hasToday = yr.days.some((d) => d.isToday);
+            return (
+              <div
+                key={yi}
+                className="memento-year-row"
+                ref={hasToday ? todayRowRef : undefined}
+              >
+                <span className="memento-year-label">{yr.yearLabel}</span>
+                <div className="memento-days-row">
+                  {yr.days.map((day, di) => {
+                    const happiness = happinessMap[day.date];
+                    const hasData = happiness != null;
+                    const bg = hasData ? happinessToColor(happiness) : undefined;
+
+                    const classes = ['mm-day'];
+                    if (day.isToday) classes.push('today');
+                    else if (day.isFuture) classes.push('future');
+                    else if (!hasData) classes.push('lived');
+
+                    return (
+                      <div
+                        key={di}
+                        className={classes.join(' ')}
+                        style={bg ? { background: bg } : undefined}
+                        title={
+                          hasData
+                            ? `${day.date}: happiness ${happiness.toFixed(1)}/10`
+                            : day.isFuture
+                              ? `${day.date} (future)`
+                              : `${day.date} (no entry)`
+                        }
+                      />
+                    );
+                  })}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* BOTTOM BLOCK: Quote */}
+      <div className="card memento-bottom">
+        <p className="memento-quote">
+          "You could leave life right now. Let that determine what you do and say and think."
+        </p>
+      </div>
+    </>
   );
 }

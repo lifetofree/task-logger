@@ -19,15 +19,20 @@ export default function InsightsView({ user }) {
     try {
       const bd = new Date(birthday + 'T00:00:00');
       const birthYear = bd.getFullYear();
-      const currentYear = new Date().getFullYear();
-      // Fetch from birth year to birth year + 80
-      const promises = [];
-      for (let y = birthYear; y <= birthYear + 80; y++) {
-        promises.push(api.heatmap(y));
+      const endYear = birthYear + 80;
+      // Fetch each year individually but in batches of 10 to avoid too many parallel requests
+      const allData = [];
+      for (let start = birthYear; start <= endYear; start += 10) {
+        const batch = [];
+        for (let y = start; y < start + 10 && y <= endYear; y++) {
+          batch.push(api.heatmap(y));
+        }
+        const results = await Promise.all(batch);
+        for (const r of results) {
+          allData.push(...r);
+        }
       }
-      const results = await Promise.all(promises);
-      const merged = results.flat();
-      setHeatmapData(merged);
+      setHeatmapData(allData);
     } catch (err) {
       setError(err.message);
     } finally {

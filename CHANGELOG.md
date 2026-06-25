@@ -5,6 +5,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [4.1.0] - 2026-06-25
+
+### Changed
+- Memento Mori split into 3 distinct blocks: top (stats + avg happiness),
+  center (scrollable day grid), bottom (quote).
+- Grid auto-scrolls to the current year row on load.
+- Happiness colors now display correctly (fixed field mapping).
+- Reduced API calls: batch fetch years in groups of 10.
+- Removed Daily Summary card from Today page.
+
 ## [4.0.0] - 2026-06-25
 
 ### Added

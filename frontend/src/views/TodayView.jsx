@@ -2,7 +2,6 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { api } from '../api/client.js';
 import EntryForm from '../components/EntryForm.jsx';
 import EntryItem from '../components/EntryItem.jsx';
-import DailySummaryCard from '../components/DailySummaryCard.jsx';
 
 function todayISO() {
   return new Date().toISOString().slice(0, 10);
@@ -58,7 +57,6 @@ export default function TodayView() {
   return (
     <div className="view">
       <EntryForm onSubmit={handleCreate} initialDate={logDate} submitting={submitting} />
-      <DailySummaryCard entries={entries} />
       {error && <div className="error-banner">{error}</div>}
       <div style={{ marginTop: 16 }}>
         <h3 className="section-title">Entries for {logDate}</h3>
