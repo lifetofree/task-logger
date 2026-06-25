@@ -22,19 +22,30 @@ function daysInYear(y) {
   return isLeapYear(y) ? 366 : 365;
 }
 
+// Happiness slider gradient stops (must match .slider-happy CSS)
+const HAPP_STOPS = [
+  { t: 1,  r: 0xe0, g: 0x68, b: 0x58 },
+  { t: 5.5, r: 0xe8, g: 0xa8, b: 0x38 },
+  { t: 10, r: 0x6a, g: 0xb8, b: 0x48 },
+];
+
+function lerp(a, b, t) {
+  return Math.round(a + (b - a) * t);
+}
+
 function happinessToColor(h) {
   if (h == null) return null;
-  // 1-10 scale mapped to warm earth tone gradient
-  // low = pale/empty, high = deep amber
-  if (h >= 9) return '#6e3810';
-  if (h >= 8) return '#8a4818';
-  if (h >= 7) return '#a05820';
-  if (h >= 6) return '#b86020';
-  if (h >= 5) return '#c87830';
-  if (h >= 4) return '#d49048';
-  if (h >= 3) return '#dca868';
-  if (h >= 2) return '#e4c090';
-  return '#e8d4b0';
+  const clamped = Math.max(1, Math.min(10, h));
+  let i = 0;
+  while (i < HAPP_STOPS.length - 1 && clamped > HAPP_STOPS[i + 1].t) i++;
+  const s0 = HAPP_STOPS[i];
+  const s1 = HAPP_STOPS[i + 1] || s0;
+  const range = s1.t - s0.t || 1;
+  const localT = (clamped - s0.t) / range;
+  const r = lerp(s0.r, s1.r, localT);
+  const g = lerp(s0.g, s1.g, localT);
+  const b = lerp(s0.b, s1.b, localT);
+  return `rgb(${r}, ${g}, ${b})`;
 }
 
 function buildDays() {

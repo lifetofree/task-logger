@@ -5,6 +5,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.2.0] - 2026-06-25
+
+### Changed
+- Memento Mori day colors now use the same gradient as the happiness slider
+  (red -> amber -> green) with smooth interpolation across the 1-10 range.
+- New favicon: 5x5 grid of colored cells reflecting the Memento Mori theme.
+- PWA icons regenerated with the same grid design.
+- Happiness legend bar gradient matches slider.
+
 ## [3.1.0] - 2026-06-25
 
 ### Changed

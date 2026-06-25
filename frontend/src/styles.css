@@ -761,7 +761,7 @@ input, textarea, select {
   width: 100px;
   height: 8px;
   border-radius: 4px;
-  background: linear-gradient(to right, #e8d4b0, #d4a056, #b86020, #6e3810);
+  background: linear-gradient(to right, #e06858, #e8a838, #6ab848);
 }
 
 .memento-days-scroll {
