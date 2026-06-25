@@ -1,7 +1,11 @@
 import React, { useState } from 'react';
 
+const TIMEZONE_OFFSET = 7; // GMT+7
+
 function todayISO() {
-  return new Date().toISOString().slice(0, 10);
+  const now = new Date();
+  const local = new Date(now.getTime() + TIMEZONE_OFFSET * 60 * 60 * 1000);
+  return local.toISOString().slice(0, 10);
 }
 
 const HAPPINESS_LABELS = ['Awful', 'Bad', 'Meh', 'OK', 'Good', 'Great', 'Happy', 'Joyful', 'Amazing', 'Perfect'];

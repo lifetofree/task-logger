@@ -1,3 +1,3 @@
 // Single source of truth for the app version.
 // Update this on every deploy. Follow semver: major.minor.patch
-export const VERSION = '4.5.2';
+export const VERSION = '4.6.0';

@@ -39,8 +39,12 @@ function cryptoRandomId() {
   return Array.from(bytes, (b) => b.toString(16).padStart(2, '0')).join('');
 }
 
+const TIMEZONE_OFFSET = 7; // GMT+7
+
 function todayDateString() {
-  return new Date().toISOString().slice(0, 10);
+  const now = new Date();
+  const local = new Date(now.getTime() + TIMEZONE_OFFSET * 60 * 60 * 1000);
+  return local.toISOString().slice(0, 10);
 }
 
 function isValidDateString(s) {
@@ -306,9 +310,10 @@ async function handleDeleteEntry(request, env, auth, id) {
 }
 
 function dateNDaysAgo(n) {
-  const d = new Date();
-  d.setUTCDate(d.getUTCDate() - n);
-  return d.toISOString().slice(0, 10);
+  const now = new Date();
+  const local = new Date(now.getTime() + TIMEZONE_OFFSET * 60 * 60 * 1000);
+  local.setUTCDate(local.getUTCDate() - n);
+  return local.toISOString().slice(0, 10);
 }
 
 async function handleDaily(request, env, auth) {

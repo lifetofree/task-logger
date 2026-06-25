@@ -7,9 +7,10 @@ const MONTH_NAMES = [
 ];
 
 function daysAgoISO(n) {
-  const d = new Date();
-  d.setDate(d.getDate() - n);
-  return d.toISOString().slice(0, 10);
+  const now = new Date();
+  const local = new Date(now.getTime() + 7 * 60 * 60 * 1000); // GMT+7
+  local.setDate(local.getDate() - n);
+  return local.toISOString().slice(0, 10);
 }
 
 export default function HistoryView() {

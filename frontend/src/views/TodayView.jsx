@@ -3,8 +3,12 @@ import { api } from '../api/client.js';
 import EntryForm from '../components/EntryForm.jsx';
 import EntryItem from '../components/EntryItem.jsx';
 
+const TIMEZONE_OFFSET = 7; // GMT+7
+
 function todayISO() {
-  return new Date().toISOString().slice(0, 10);
+  const now = new Date();
+  const local = new Date(now.getTime() + TIMEZONE_OFFSET * 60 * 60 * 1000);
+  return local.toISOString().slice(0, 10);
 }
 
 export default function TodayView() {
