@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [4.3.0] - 2026-06-25
+
+### Changed
+- Removed avg happiness stat from Memento Mori top block.
+- Removed separate bottom quote block.
+- Random Memento Mori quote now displayed in top block (rotates each visit).
+
 ## [4.2.0] - 2026-06-25
 
 ### Changed

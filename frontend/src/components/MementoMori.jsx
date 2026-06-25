@@ -3,6 +3,24 @@ import React, { useMemo, useRef, useEffect } from 'react';
 const LIFE_YEARS = 80;
 const DAYS_PER_ROW = 28; // 4 weeks per row
 
+const QUOTES = [
+  'You could leave life right now. Let that determine what you do and say and think.',
+  'It is not that we have a short time to live, but that we waste much of it. - Seneca',
+  'Remember that you are mortal. This is the ultimate tool for living well.',
+  'Do not act as if you had ten thousand years to live. - Marcus Aurelius',
+  'Death is not the greatest loss in life. The greatest loss is what dies inside us while we live.',
+  'Every man dies. Not every man really lives.',
+  'Life is short. Act now. Tomorrow is not promised.',
+  'Think of yourself as dead. You have lived your life. Now take what is left and live it properly. - Marcus Aurelius',
+  'We do not fear death, we fear that no one will remember us after we are gone.',
+  'The whole future lies in uncertainty: live immediately. - Seneca',
+  'Let us prepare our minds as if we had come to the very end of life. - Seneca',
+  'He who fears death will never do anything worthy of a living man. - Seneca',
+  'Life is a spark between two identical voids. Make it burn bright.',
+  'While we wait for life, life passes. - Seneca',
+  'Waste no more time arguing about what a good man should be. Be one. - Marcus Aurelius',
+];
+
 function isoDate(d) {
   const yr = d.getFullYear();
   const mo = String(d.getMonth() + 1).padStart(2, '0');
@@ -73,12 +91,11 @@ export default function MementoMori({ heatmapData, birthday }) {
   const totalDays = allDays.length;
   const livedDays = allDays.filter((d) => d.isPast || d.isToday).length;
   const remainingDays = totalDays - livedDays;
-  const loggedDays = Object.keys(happinessMap).length;
 
-  const happinessValues = Object.values(happinessMap).filter((v) => v != null);
-  const avgHappiness = happinessValues.length > 0
-    ? happinessValues.reduce((s, v) => s + v, 0) / happinessValues.length
-    : null;
+  // Pick a random quote (stable per session)
+  const quote = useMemo(() => {
+    return QUOTES[Math.floor(Math.random() * QUOTES.length)];
+  }, []);
 
   // Find today's row index for auto-scroll
   const todayRowIndex = useMemo(() => {
@@ -132,14 +149,8 @@ export default function MementoMori({ heatmapData, birthday }) {
             <span className="memento-stat-num">{remainingDays.toLocaleString()}</span>
             <span className="memento-stat-label">days ahead</span>
           </div>
-          <div className="memento-stat">
-            <span className="memento-stat-num">{avgHappiness != null ? avgHappiness.toFixed(1) : '—'}</span>
-            <span className="memento-stat-label">avg happy</span>
-          </div>
         </div>
-        <p className="memento-intro">
-          Each row is 4 weeks (28 days). {LIFE_YEARS} years from {bdFormatted} to {endYear}.
-        </p>
+        <p className="memento-quote">{quote}</p>
         <div className="memento-happiness-legend">
           <span className="legend-text">1</span>
           <div className="legend-bar" />
@@ -187,13 +198,6 @@ export default function MementoMori({ heatmapData, birthday }) {
             );
           })}
         </div>
-      </div>
-
-      {/* BOTTOM BLOCK: Quote */}
-      <div className="card memento-bottom">
-        <p className="memento-quote">
-          "You could leave life right now. Let that determine what you do and say and think."
-        </p>
       </div>
     </>
   );
