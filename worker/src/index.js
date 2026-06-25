@@ -5,6 +5,7 @@ const BCRYPT_COST = 12;
 const JWT_LIFETIME_SECONDS = 7 * 24 * 60 * 60;
 const RATE_LIMIT_WINDOW_MS = 60 * 60 * 1000;
 const RATE_LIMIT_MAX = 5;
+const MAX_USERS = 50;
 
 function jsonResponse(data, init = {}) {
   return new Response(JSON.stringify(data), {
@@ -136,6 +137,15 @@ async function handleSignup(request, env) {
   }
   if (!isValidDateString(birthday)) {
     return badRequest('Birthday must be a valid date (YYYY-MM-DD).');
+  }
+
+  const userCountRow = await env.DB
+    .prepare('SELECT COUNT(*) AS count FROM users')
+    .first();
+  // Owner (first registered user) does not count against the limit
+  const effectiveCount = (userCountRow?.count || 0) - 1;
+  if (effectiveCount >= MAX_USERS) {
+    return jsonResponse({ error: 'Registration is closed. Maximum number of users reached.' }, { status: 403 });
   }
 
   const existing = await env.DB
