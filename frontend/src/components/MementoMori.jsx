@@ -1,6 +1,7 @@
 import React, { useMemo, useRef, useEffect } from 'react';
 
 const LIFE_YEARS = 80;
+const DAYS_PER_ROW = 28; // 4 weeks per row
 
 function isoDate(d) {
   const yr = d.getFullYear();
@@ -37,25 +38,22 @@ function buildDays(birthday) {
   const bd = new Date(birthday + 'T00:00:00');
   if (isNaN(bd.getTime())) return [];
   const todayStr = isoDate(new Date());
-  const years = [];
 
-  for (let y = 0; y < LIFE_YEARS; y++) {
-    const yearStart = new Date(bd.getFullYear() + y, bd.getMonth(), bd.getDate());
-    const days = [];
-    for (let d = 0; d < 365; d++) {
-      const dayDate = new Date(yearStart);
-      dayDate.setDate(yearStart.getDate() + d);
-      const dayStr = isoDate(dayDate);
-      days.push({
-        date: dayStr,
-        isPast: dayStr < todayStr,
-        isFuture: dayStr > todayStr,
-        isToday: dayStr === todayStr,
-      });
-    }
-    years.push({ yearLabel: `${yearStart.getFullYear()}`, yearIndex: y, days });
+  const totalDays = LIFE_YEARS * 365;
+  const days = [];
+  for (let d = 0; d < totalDays; d++) {
+    const dayDate = new Date(bd);
+    dayDate.setDate(bd.getDate() + d);
+    const dayStr = isoDate(dayDate);
+    days.push({
+      date: dayStr,
+      dayIndex: d,
+      isPast: dayStr < todayStr,
+      isFuture: dayStr > todayStr,
+      isToday: dayStr === todayStr,
+    });
   }
-  return years;
+  return days;
 }
 
 export default function MementoMori({ heatmapData, birthday }) {
@@ -67,25 +65,37 @@ export default function MementoMori({ heatmapData, birthday }) {
     return map;
   }, [heatmapData]);
 
-  const yearsData = useMemo(() => buildDays(birthday), [birthday]);
+  const allDays = useMemo(() => buildDays(birthday), [birthday]);
 
   const bd = birthday ? new Date(birthday + 'T00:00:00') : null;
   const endYear = bd ? bd.getFullYear() + LIFE_YEARS - 1 : null;
 
-  const totalDays = yearsData.reduce((s, y) => s + y.days.length, 0);
-  const livedDays = yearsData.reduce((s, y) => {
-    return s + y.days.filter((d) => d.isPast || d.isToday).length;
-  }, 0);
+  const totalDays = allDays.length;
+  const livedDays = allDays.filter((d) => d.isPast || d.isToday).length;
   const remainingDays = totalDays - livedDays;
   const loggedDays = Object.keys(happinessMap).length;
 
-  // Calculate average happiness from logged days
   const happinessValues = Object.values(happinessMap).filter((v) => v != null);
   const avgHappiness = happinessValues.length > 0
     ? happinessValues.reduce((s, v) => s + v, 0) / happinessValues.length
     : null;
 
-  // Auto-scroll to current year row
+  // Find today's row index for auto-scroll
+  const todayRowIndex = useMemo(() => {
+    const idx = allDays.findIndex((d) => d.isToday);
+    return idx >= 0 ? Math.floor(idx / DAYS_PER_ROW) : -1;
+  }, [allDays]);
+
+  // Split days into rows of 28
+  const rows = useMemo(() => {
+    const result = [];
+    for (let i = 0; i < allDays.length; i += DAYS_PER_ROW) {
+      result.push(allDays.slice(i, i + DAYS_PER_ROW));
+    }
+    return result;
+  }, [allDays]);
+
+  // Auto-scroll to today's row
   const gridRef = useRef(null);
   const todayRowRef = useRef(null);
 
@@ -96,9 +106,9 @@ export default function MementoMori({ heatmapData, birthday }) {
       const scrollTop = row.offsetTop - grid.clientHeight / 2 + row.clientHeight / 2;
       grid.scrollTo({ top: scrollTop, behavior: 'smooth' });
     }
-  }, [yearsData.length]);
+  }, [allDays.length]);
 
-  if (!birthday || yearsData.length === 0) {
+  if (!birthday || allDays.length === 0) {
     return (
       <div className="card memento-card">
         <h3 className="section-title">Memento Mori</h3>
@@ -124,11 +134,11 @@ export default function MementoMori({ heatmapData, birthday }) {
           </div>
           <div className="memento-stat">
             <span className="memento-stat-num">{avgHappiness != null ? avgHappiness.toFixed(1) : '—'}</span>
-            <span className="memento-stat-label">avg happiness</span>
+            <span className="memento-stat-label">avg happy</span>
           </div>
         </div>
         <p className="memento-intro">
-          {LIFE_YEARS} years from {bdFormatted} to {endYear}. Colored by happiness.
+          Each row is 4 weeks (28 days). {LIFE_YEARS} years from {bdFormatted} to {endYear}.
         </p>
         <div className="memento-happiness-legend">
           <span className="legend-text">1</span>
@@ -140,42 +150,39 @@ export default function MementoMori({ heatmapData, birthday }) {
       {/* CENTER BLOCK: Grid */}
       <div className="card memento-center">
         <div className="memento-days-scroll" ref={gridRef}>
-          {yearsData.map((yr, yi) => {
-            const hasToday = yr.days.some((d) => d.isToday);
+          {rows.map((row, ri) => {
+            const hasToday = row.some((d) => d.isToday);
             return (
               <div
-                key={yi}
-                className="memento-year-row"
+                key={ri}
+                className="mm-row"
                 ref={hasToday ? todayRowRef : undefined}
               >
-                <span className="memento-year-label">{yr.yearLabel}</span>
-                <div className="memento-days-row">
-                  {yr.days.map((day, di) => {
-                    const happiness = happinessMap[day.date];
-                    const hasData = happiness != null;
-                    const bg = hasData ? happinessToColor(happiness) : undefined;
+                {row.map((day, di) => {
+                  const happiness = happinessMap[day.date];
+                  const hasData = happiness != null;
+                  const bg = hasData ? happinessToColor(happiness) : undefined;
 
-                    const classes = ['mm-day'];
-                    if (day.isToday) classes.push('today');
-                    else if (day.isFuture) classes.push('future');
-                    else if (!hasData) classes.push('lived');
+                  const classes = ['mm-day'];
+                  if (day.isToday) classes.push('today');
+                  else if (day.isFuture) classes.push('future');
+                  else if (!hasData) classes.push('lived');
 
-                    return (
-                      <div
-                        key={di}
-                        className={classes.join(' ')}
-                        style={bg ? { background: bg } : undefined}
-                        title={
-                          hasData
-                            ? `${day.date}: happiness ${happiness.toFixed(1)}/10`
-                            : day.isFuture
-                              ? `${day.date} (future)`
-                              : `${day.date} (no entry)`
-                        }
-                      />
-                    );
-                  })}
-                </div>
+                  return (
+                    <div
+                      key={di}
+                      className={classes.join(' ')}
+                      style={bg ? { background: bg } : undefined}
+                      title={
+                        hasData
+                          ? `${day.date}: happiness ${happiness.toFixed(1)}/10`
+                          : day.isFuture
+                            ? `${day.date} (future)`
+                            : `${day.date}`
+                      }
+                    />
+                  );
+                })}
               </div>
             );
           })}
