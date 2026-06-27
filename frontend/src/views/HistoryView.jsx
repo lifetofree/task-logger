@@ -1,17 +1,11 @@
 import React, { useEffect, useState, useCallback, useMemo } from 'react';
 import { api } from '../api/client.js';
+import { daysAgoISO } from '../lib/date.js';
 
 const MONTH_NAMES = [
   'January', 'February', 'March', 'April', 'May', 'June',
   'July', 'August', 'September', 'October', 'November', 'December',
 ];
-
-function daysAgoISO(n) {
-  const now = new Date();
-  const local = new Date(now.getTime() + 7 * 60 * 60 * 1000); // GMT+7
-  local.setDate(local.getDate() - n);
-  return local.toISOString().slice(0, 10);
-}
 
 export default function HistoryView() {
   const [entries, setEntries] = useState([]);

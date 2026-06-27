@@ -6,6 +6,8 @@ const JWT_LIFETIME_SECONDS = 7 * 24 * 60 * 60;
 const RATE_LIMIT_WINDOW_MS = 60 * 60 * 1000;
 const RATE_LIMIT_MAX = 5;
 const MAX_USERS = 50;
+const MAX_NAME_LENGTH = 200;
+const MAX_PASSWORD_LENGTH = 1024; // bcrypt-safe upper bound
 
 function jsonResponse(data, init = {}) {
   return new Response(JSON.stringify(data), {
@@ -139,6 +141,9 @@ async function handleSignup(request, env) {
   if (typeof password !== 'string' || password.length < 8) {
     return badRequest('Password must be at least 8 characters.');
   }
+  if (password.length > MAX_PASSWORD_LENGTH) {
+    return badRequest(`Password must be at most ${MAX_PASSWORD_LENGTH} characters.`);
+  }
   if (!isValidDateString(birthday)) {
     return badRequest('Birthday must be a valid date (YYYY-MM-DD).');
   }
@@ -234,6 +239,7 @@ async function handleCreateEntry(request, env, auth) {
   }
   const { name, happiness, progress, log_date } = body;
   if (typeof name !== 'string' || name.trim().length === 0) return badRequest('Name required');
+  if (name.length > MAX_NAME_LENGTH) return badRequest(`Name must be at most ${MAX_NAME_LENGTH} characters.`);
   if (!isValidRating(happiness)) return badRequest('Happiness must be 1-10');
   if (!isValidRating(progress)) return badRequest('Progress must be 1-10');
   const date = log_date || todayDateString();
@@ -267,6 +273,7 @@ async function handleUpdateEntry(request, env, auth, id) {
   const next = { ...existing };
   if ('name' in body) {
     if (typeof body.name !== 'string' || body.name.trim().length === 0) return badRequest('Name required');
+    if (body.name.length > MAX_NAME_LENGTH) return badRequest(`Name must be at most ${MAX_NAME_LENGTH} characters.`);
     next.name = body.name.trim();
   }
   if ('happiness' in body) {

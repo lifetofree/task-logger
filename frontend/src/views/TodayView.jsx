@@ -2,14 +2,7 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { api } from '../api/client.js';
 import EntryForm from '../components/EntryForm.jsx';
 import EntryItem from '../components/EntryItem.jsx';
-
-const TIMEZONE_OFFSET = 7; // GMT+7
-
-function todayISO() {
-  const now = new Date();
-  const local = new Date(now.getTime() + TIMEZONE_OFFSET * 60 * 60 * 1000);
-  return local.toISOString().slice(0, 10);
-}
+import { todayISO } from '../lib/date.js';
 
 export default function TodayView() {
   const [logDate, setLogDate] = useState(todayISO());

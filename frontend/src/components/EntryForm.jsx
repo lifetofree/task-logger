@@ -1,12 +1,5 @@
 import React, { useState } from 'react';
-
-const TIMEZONE_OFFSET = 7; // GMT+7
-
-function todayISO() {
-  const now = new Date();
-  const local = new Date(now.getTime() + TIMEZONE_OFFSET * 60 * 60 * 1000);
-  return local.toISOString().slice(0, 10);
-}
+import { todayISO } from '../lib/date.js';
 
 const HAPPINESS_LABELS = ['Awful', 'Bad', 'Meh', 'OK', 'Good', 'Great', 'Happy', 'Joyful', 'Amazing', 'Perfect'];
 const PROGRESS_LABELS = ['1%', '10%', '20%', '30%', '40%', '50%', '60%', '70%', '80%', '90%', '100%'];

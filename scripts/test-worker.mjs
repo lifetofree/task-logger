@@ -434,4 +434,57 @@ assert(!remaining.some((e) => e.id === e1.id), 'deleted entry is not present');
 r = await call('GET', `/api/entries/does-not-exist`, null, aliceToken);
 assert(r.status === 404, 'missing entry returns 404');
 
+// 22. Input length caps
+r = await call('POST', '/api/entries', {
+  name: 'x'.repeat(201),
+  happiness: 5,
+  progress: 5,
+  log_date: today,
+}, aliceToken);
+assert(r.status === 400, 'rejects name longer than 200 chars');
+
+// Fetch a known existing entry id to test the update path cap
+r = await call('GET', `/api/entries?date=${today}`, null, aliceToken);
+const existingEntries = await r.json();
+const capTestId = existingEntries[0].id;
+r = await call('PUT', `/api/entries/${capTestId}`, { name: 'y'.repeat(201) }, aliceToken);
+assert(r.status === 400, 'rejects name > 200 on update');
+
+// Password too long (bcrypt-safe upper bound)
+r = await call('POST', '/api/auth/signup', {
+  username: 'longpwuser',
+  password: 'p'.repeat(1025),
+  birthday: '1990-01-01',
+});
+assert(r.status === 400, 'rejects password longer than 1024 chars');
+
+// 23. Signup user cap (MAX_USERS = 50, owner excluded).
+// Alice was the first user (owner) and Bob the second, so the DB already
+// holds 2 users. We fill to the boundary and verify the 51st non-owner is rejected.
+// Each signup uses a fresh CF-Connecting-IP above to bypass the per-IP rate limit.
+// We already have alice (owner) + bob = 2 users. Create 48 more to reach 50 non-owner+owner
+// (owner excluded, so effective non-owner count must reach 50 for a 403).
+// Add (50 - 1 existing non-owner 'bob') = 49 more non-owners; the 50th should succeed,
+// the 51st should be rejected.
+for (let i = 0; i < 49; i++) {
+  r = await call('POST', '/api/auth/signup', {
+    username: `capuser${i}`,
+    password: 'password123',
+    birthday: '1990-01-01',
+  });
+  if (r.status !== 201) {
+    const body = await r.json().catch(() => ({}));
+    assert(false, `cap fill signup capuser${i} failed: ${r.status} ${body?.error || ''}`);
+  }
+}
+assert(true, 'filled to 50 non-owner signups (owner excluded)');
+
+// 51st non-owner signup must be rejected
+r = await call('POST', '/api/auth/signup', {
+  username: 'overflowuser',
+  password: 'password123',
+  birthday: '1990-01-01',
+});
+assert(r.status === 403, '51st non-owner signup rejected (cap reached)');
+
 console.log('All API tests passed.');
