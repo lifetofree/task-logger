@@ -11,7 +11,7 @@
     "db:execute:remote": "npx wrangler d1 execute task-logger-db --file=./schema.sql"
   },
   "devDependencies": {
-    "wrangler": "^3.65.0"
+    "wrangler": "^4.105.0"
   },
   "dependencies": {
     "bcryptjs": "^3.0.3",
