@@ -1,177 +1,203 @@
 # Task Logger: Requirements & Specification
 
+> **Version:** 4.6.0 (2026-06-26). This document reflects the *currently deployed* product.
+> The original v1.0 single-user spec is superseded; see ADRs 0001–0005 for the decision history.
+
 ## Overview
 
-A personal, single-user web application and Progressive Web App (PWA) for daily task logging. The user records tasks they worked on, how happy they felt doing them, and how much progress they made. Over time, the app surfaces trends, daily summaries, and a calendar heatmap to support personal reflection and habit-building.
+A multi-user web application and Progressive Web App (PWA) for daily task logging. Each user records tasks they worked on, how happy they felt doing them (1–10), and how much progress they made (1–10). Over time, the app surfaces a History of past entries and a Memento Mori life-grid visualization tied to the user's birthday, supporting personal reflection and habit-building.
 
 **Runtime**: Cloudflare Workers + Cloudflare D1 (SQLite at the edge).
 **Frontend**: React + Vite + vite-plugin-pwa, served as static assets from the same Worker.
-**Auth**: Single-user, token-based (`X-Auth-Token` header), stored in localStorage after entry.
+**Auth**: Multi-user signup/login with username + password; JWT (HS256, 7-day) sessions via `Authorization: Bearer <jwt>`.
 
 ---
 
 ## Domain Model
 
-A single entity: **Task Log Entry**.
+Two stored entities: **User** and **Task Log Entry**.
 
-### Fields
+### User
 
 | Field | Type | Constraints | Description |
 |-------|------|-------------|-------------|
-| `id` | TEXT | PRIMARY KEY | Short random identifier (8 chars base36). |
-| `name` | TEXT | NOT NULL | Name of the task worked on. |
-| `happiness` | INTEGER | NOT NULL, CHECK 1..5 | Subjective feeling (1=sad, 5=great). |
-| `progress` | INTEGER | NOT NULL, CHECK 1..5 | Progress made (1=just started, 5=complete). |
-| `log_date` | TEXT | NOT NULL | Calendar date in `YYYY-MM-DD` (user-selectable). |
-| `created_at` | TEXT | NOT NULL, DEFAULT CURRENT_TIMESTAMP | Row insert timestamp. |
-| `updated_at` | TEXT | NOT NULL, DEFAULT CURRENT_TIMESTAMP | Last modification timestamp. |
+| `id` | TEXT | PRIMARY KEY | 32-char hex random identifier. |
+| `username` | TEXT | NOT NULL, UNIQUE | 3–32 chars, lowercase alphanumeric + underscore. |
+| `password_hash` | TEXT | NOT NULL | bcrypt hash (cost 12) via `bcryptjs`. |
+| `birthday` | TEXT | NOT NULL DEFAULT '1983-09-11' | `YYYY-MM-DD`. Drives the Memento Mori grid. |
+| `created_at` | TEXT | NOT NULL DEFAULT CURRENT_TIMESTAMP | Row insert timestamp. |
+
+### Task Log Entry
+
+| Field | Type | Constraints | Description |
+|-------|------|-------------|-------------|
+| `id` | TEXT | PRIMARY KEY | 32-char hex random identifier. |
+| `user_id` | TEXT | NOT NULL, FK -> users.id | Owning user (row-level isolation). |
+| `name` | TEXT | NOT NULL | Name of the task worked on (≤ 200 chars in UI). |
+| `happiness` | INTEGER | NOT NULL, CHECK 1..10 | Subjective feeling (1=awful, 10=perfect). |
+| `progress` | INTEGER | NOT NULL, CHECK 1..10 | Progress made (1=1%, 10=100%). |
+| `log_date` | TEXT | NOT NULL | Calendar date `YYYY-MM-DD` (user-selectable). |
+| `created_at` | TEXT | NOT NULL DEFAULT CURRENT_TIMESTAMP | Row insert timestamp. |
+| `updated_at` | TEXT | NOT NULL DEFAULT CURRENT_TIMESTAMP | Last modification timestamp. |
 
 ### Derived Concepts (not stored)
 
-- **Success Rate** — derived from `progress` values. E.g., the fraction of entries on a date with `progress = 5`.
-- **Day Score** — daily aggregate used to color the heatmap (composite of `happiness` and `progress`).
-- **Daily Summary** — `{ avgHappiness, avgProgress, count }` for a single `log_date`.
+- **Daily Summary** — `{ avgHappiness, avgProgress, count, successRate }` for a single `log_date`. `successRate` = fraction of entries with `progress = 10`.
+- **Rollup Summary** — aggregate of the above over a period (week / month / 30d).
+- **Heatmap Cell** — `{ date, happiness, progress, count }` daily aggregates for a given year (used by the Memento Mori visualization).
+- **Days Lived / Days Ahead** — derived from `users.birthday` and today (80-year horizon) for the Memento Mori stats.
 
 ---
 
 ## User Stories & Acceptance Criteria
 
-### US-1: First-time access (Login)
+### US-1: Sign up (new user)
 
-**As a** first-time visitor,
-**I want to** enter an access token to unlock the app,
-**So that** only I can write to my personal log.
+**As a** new visitor,
+**I want to** create an account with username, password, and birthday,
+**So that** I can start logging and see my Memento Mori grid.
 
 **Acceptance Criteria**:
-- App shows a single-input login screen on first visit.
-- Token is validated against the Worker's `AUTH_TOKEN` environment variable.
-- On success, token is stored in `localStorage` under `task-logger:token`.
-- On success, the app transitions to the main view.
-- On failure (401), an inline error is shown.
-- A "Sign out" option in the app clears the token and returns to the login screen.
+- SignupScreen is the default landing for unauthenticated visitors.
+- Fields: username, password (≥ 8 chars), confirm password, birthday.
+- Username is lowercased on input; must match `^[a-z0-9_]{3,32}$`.
+- On success: `POST /api/auth/signup` returns `{ success, token, user }`; token + user stored; app transitions to Today.
+- Duplicate username → 409. Invalid input → 400 with inline error.
+- Registration is capped at **50 users** (the owner/first user is excluded from the count). 51st signup → 403.
+- Signup is IP-rate-limited (5/hour, best-effort in-memory).
 
-### US-2: Add a task log entry
+### US-2: Log in (returning user)
+
+**As a** returning user,
+**I want to** sign in with username + password,
+**So that** I access my log.
+
+**Acceptance Criteria**:
+- LoginScreen reachable via "Already have an account? Sign in".
+- `POST /api/auth/login` validates credentials (bcrypt compare). Wrong creds → 401 with generic message.
+- On success: token + user stored; app transitions to Today.
+- "Sign out" clears the session and returns to the login screen.
+
+### US-3: Add a task log entry
 
 **As a** daily user,
-**I want to** quickly record a task I worked on, how I felt, and my progress,
+**I want to** record a task, how I felt, and my progress,
 **So that** I capture reflections during or right after the work.
 
 **Acceptance Criteria**:
-- The "Today" tab shows an entry form at the top.
-- Form fields: Task Name (text), Happiness (5 emoji icons, tappable), Progress (1-5 slider or icon row).
-- `log_date` defaults to today; a date picker is available to backfill a previous day.
+- The Today tab shows an entry form.
+- Fields: Date (defaults to today, picker allows backfill, max = today), Task Name (text, ≤ 200 chars), Happiness (1–10 gradient slider, red→green), Progress (1–10 slider shown as 10% increments).
 - Submitting creates an entry via `POST /api/entries`.
-- Form clears on success.
-- Validation: `name` non-empty, `happiness` 1-5, `progress` 1-5.
+- Form clears on success; entry appears at top of the list for that date.
+- Validation: name non-empty, happiness 1–10, progress 1–10, `log_date` valid `YYYY-MM-DD`.
 
-### US-3: View today's entries
+### US-4: View entries for a date (Today)
 
 **As a** daily user,
-**I want to** see all entries I logged today,
+**I want to** see all entries I logged on a selected date,
 **So that** I can review what I accomplished and how I felt.
 
 **Acceptance Criteria**:
-- "Today" tab lists entries for the currently selected `log_date` (default today).
-- Each entry displays: name, happiness emoji, progress value, last-updated time.
-- A daily summary card at the top shows: entry count, average happiness, average progress.
-- List updates immediately after add/edit/delete.
+- Today tab lists entries for the selected `log_date` (default today).
+- Each entry displays name, happiness chip (e.g. "😊 7/10"), progress chip (e.g. "📊 60%"), date, and supports inline edit + delete.
+- Date is selectable; the list reloads for the chosen date.
 
-### US-4: Edit an entry
+### US-5: Edit an entry
 
 **As a** daily user,
-**I want to** correct mistakes (typos, mis-tapped ratings),
+**I want to** correct mistakes,
 **So that** my data stays accurate.
 
 **Acceptance Criteria**:
-- Tapping an entry opens an edit mode (inline or modal).
-- Form pre-fills with the entry's current values.
+- Tapping an entry opens inline edit mode pre-filled with current values.
 - Saving issues `PUT /api/entries/:id` and updates `updated_at`.
 - Cancel reverts without changes.
 
-### US-5: Delete an entry
+### US-6: Delete an entry
 
 **As a** daily user,
-**I want to** remove an entry entirely,
-**So that** my log reflects only real, intended entries.
+**I want to** remove an entry,
+**So that** my log reflects only intended entries.
 
 **Acceptance Criteria**:
 - Each entry has a delete action with confirmation.
-- Confirming issues `DELETE /api/entries/:id`.
-- Entry is removed from the list immediately.
+- Confirming issues `DELETE /api/entries/:id`; entry removed immediately.
 
-### US-6: Trend charts (Insights)
+### US-7: History
 
-**As a** daily user,
-**I want to** see my happiness and progress trends over time,
-**So that** I notice patterns and improvements.
-
-**Acceptance Criteria**:
-- "Insights" tab shows line charts for Happiness and Progress over the past 7, 30, or 90 days (selector).
-- Each data point represents the daily average for that date.
-- Chart uses Recharts; responsive on mobile.
-- Empty state message when no data exists for the range.
-
-### US-7: Daily summaries and rollups
-
-**As a** daily user,
-**I want to** see weekly and monthly rollups,
-**So that** I can review longer periods at a glance.
+**As a** returning user,
+**I want to** browse my past entries,
+**So that** I can look back over time.
 
 **Acceptance Criteria**:
-- Rollups show: total entries, average happiness, average progress, success rate (entries with `progress = 5` / total entries).
-- Period selector: This Week, This Month, Last 30 Days.
+- History tab shows the **last 7 days** of entries by default, grouped by month/year, most recent first.
+- A search box filters across *all* entries (not just recent) by task name, date, happiness, or progress value.
+- Each entry rendered read-only (name + happiness/progress chips + date).
+- `GET /api/history` returns all the user's entries.
 
-### US-8: Calendar heatmap
+### US-8: Memento Mori visualization
 
-**As a** daily user,
-**I want to** see a GitHub-style calendar heatmap of my day scores,
-**So that** I can visualize consistency and emotional/progress patterns.
+**As a** user who entered a birthday,
+**I want to** see a day-by-day life grid colored by my happiness,
+**So that** I reflect on time and consistency.
 
 **Acceptance Criteria**:
-- Heatmap displays the past 365 days as a grid (weeks as columns, days as rows).
-- Each cell's color intensity reflects the Day Score (composite of avg happiness + avg progress for that date).
-- Hover/tap on a cell shows the date and daily summary tooltip.
-- Empty cells for days with no entries are clearly distinguished.
+- "Memento" tab renders an 80-year, day-by-day grid starting from the user's birthday (28 days per row).
+- Top block shows: days lived, days ahead, a rotating Stoic quote, and a happiness 1–10 legend.
+- Each day cell is colored by the day's average happiness (red→amber→green gradient). Days without entries but in the past render as "lived"; future days render with a soft light style.
+- Grid auto-scrolls on load so today's row is the 10th visible row.
+- Data fetched via `GET /api/insights/heatmap?year=YYYY` for each year from birthday to birthday+80, batched 10 years at a time.
+- If no birthday is set, an empty state explains signup requires a birthday.
 
 ---
 
 ## API Endpoints
 
-All write/read endpoints require `X-Auth-Token` header matching `env.AUTH_TOKEN`. The login endpoint validates the token.
+All `/api/*` routes except `signup`/`login` require `Authorization: Bearer <jwt>`.
 
 | Method | Path | Body / Query | Response | Description |
 |--------|------|--------------|----------|-------------|
-| POST | `/api/auth/login` | `{ token: string }` | `{ success: true }` or 401 | Validates token, no session (client stores token). |
-| GET | `/api/entries?date=YYYY-MM-DD` | optional `date` param | `Entry[]` | Lists entries for a date (defaults to today). |
-| POST | `/api/entries` | `{ name, happiness, progress, log_date }` | `Entry` (201) | Creates a new entry. |
-| PUT | `/api/entries/:id` | `{ name?, happiness?, progress?, log_date? }` | `Entry` | Updates an entry. |
-| DELETE | `/api/entries/:id` | — | `{ success: true }` (204) | Deletes an entry. |
-| GET | `/api/insights/daily?from=YYYY-MM-DD&to=YYYY-MM-DD` | date range | `DailySummary[]` | Daily aggregates for charts. |
-| GET | `/api/insights/rollup?period=week\|month\|30d` | — | `RollupSummary` | Weekly/monthly rollups. |
-| GET | `/api/insights/heatmap?year=YYYY` | optional year | `HeatmapCell[]` | 365 cells for the calendar heatmap. |
+| POST | `/api/auth/signup` | `{ username, password, birthday }` | `{ success, token, user }` (201) | Creates account; rate-limited; capped at 50 users. |
+| POST | `/api/auth/login` | `{ username, password }` | `{ success, token, user }` (200) | Validates credentials, returns JWT. |
+| GET | `/api/auth/me` | — | `{ user }` | Returns the authenticated user. |
+| GET | `/api/entries?date=YYYY-MM-DD` | optional `date` | `Entry[]` | Entries for a date (defaults to today). |
+| POST | `/api/entries` | `{ name, happiness, progress, log_date }` | `Entry` (201) | Creates an entry. |
+| PUT | `/api/entries/:id` | `{ name?, happiness?, progress?, log_date? }` | `Entry` | Updates an entry (owner-only). |
+| DELETE | `/api/entries/:id` | — | `{ success: true }` | Deletes an entry (owner-only). |
+| GET | `/api/history` | — | `Entry[]` | All entries for the user, newest first. |
+| GET | `/api/insights/daily?from=&to=` | date range | `DailySummary[]` | Daily aggregates for charts/rollups. |
+| GET | `/api/insights/rollup?period=week\|month\|30d` | — | `RollupSummary` | Period rollup. |
+| GET | `/api/insights/heatmap?year=YYYY` | optional year | `HeatmapCell[]` | Daily aggregates for one year. |
 
-### Authentication
-
-Every `/api/*` route (except `/api/auth/login`) requires a valid `X-Auth-Token` header. Missing or invalid tokens return `401 Unauthorized`.
+**Cross-user isolation**: every entry and insights query filters by `user_id` from the JWT. A request for another user's entry returns 404 (no leak).
 
 ---
 
 ## Data Model (`schema.sql`)
 
 ```sql
-DROP TABLE IF EXISTS entries;
+CREATE TABLE users (
+  id TEXT PRIMARY KEY,
+  username TEXT NOT NULL UNIQUE,
+  password_hash TEXT NOT NULL,
+  birthday TEXT NOT NULL DEFAULT '1983-09-11',
+  created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
 CREATE TABLE entries (
   id TEXT PRIMARY KEY,
+  user_id TEXT NOT NULL REFERENCES users(id),
   name TEXT NOT NULL,
-  happiness INTEGER NOT NULL CHECK (happiness BETWEEN 1 AND 5),
-  progress INTEGER NOT NULL CHECK (progress BETWEEN 1 AND 5),
+  happiness INTEGER NOT NULL CHECK (happiness BETWEEN 1 AND 10),
+  progress INTEGER NOT NULL CHECK (progress BETWEEN 1 AND 10),
   log_date TEXT NOT NULL,
   created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE INDEX idx_entries_log_date ON entries (log_date);
-CREATE INDEX idx_entries_created_at ON entries (created_at);
+CREATE INDEX idx_users_username ON users (username);
+CREATE INDEX idx_entries_user_date ON entries (user_id, log_date);
+CREATE INDEX idx_entries_user_created ON entries (user_id, created_at);
 ```
 
 ---
@@ -180,40 +206,55 @@ CREATE INDEX idx_entries_created_at ON entries (created_at);
 
 ```
 /
-├── CONTEXT.md                            # Glossary (created)
+├── CONTEXT.md                            # Glossary
+├── STATUS.md                             # SDLC handoff tracker
+├── CHANGELOG.md                          # Release history (source of truth for changes)
+├── schema.sql                            # D1 schema
+├── wrangler.toml                         # Worker + D1 + custom domain config
 ├── docs/
 │   ├── REQUIREMENTS.md                   # This document
+│   ├── REVIEWS.md                        # Code review log
 │   └── adr/
 │       ├── 0001-cloudflare-workers-d1-edge-architecture.md
-│       └── 0002-pwa-app-shell-only-no-offline-data.md
-├── schema.sql                            # D1 schema
-├── wrangler.toml                         # Worker + D1 + env config
+│       ├── 0002-pwa-app-shell-only-no-offline-data.md
+│       ├── 0003-multi-user-jwt-auth-replaces-token.md
+│       ├── 0004-memento-mori-pivot.md
+│       └── 0005-rating-scale-1-to-10.md
 ├── worker/
 │   └── src/
 │       └── index.js                      # API routes + static asset serving
 ├── frontend/
 │   ├── package.json
-│   ├── vite.config.js                    # vite-plugin-pwa config
+│   ├── vite.config.js                    # vite-plugin-pwa (autoUpdate)
 │   ├── index.html
 │   └── src/
 │       ├── main.jsx
-│       ├── App.jsx
-│       ├── api/client.js                 # fetch wrapper with X-Auth-Token
-│       ├── auth/LoginScreen.jsx
+│       ├── App.jsx                       # 3 tabs: Today / History / Memento
+│       ├── version.js
+│       ├── styles.css
+│       ├── api/client.js                 # fetch wrapper + session storage
+│       ├── auth/
+│       │   ├── LoginScreen.jsx
+│       │   └── SignupScreen.jsx
 │       ├── components/
-│       │   ├── TabBar.jsx
-│       │   ├── EntryForm.jsx
-│       │   ├── EntryList.jsx
-│       │   ├── EntryItem.jsx
-│       │   ├── DailySummaryCard.jsx
-│       │   ├── TrendChart.jsx           # Recharts
-│       │   ├── RollupCard.jsx
-│       │   └── Heatmap.jsx              # custom SVG/CSS
+│       │   ├── EntryForm.jsx             # 1-10 sliders
+│       │   ├── EntryItem.jsx             # inline edit/delete
+│       │   ├── DailySummaryCard.jsx      # (legacy, unused in current UI)
+│       │   ├── MementoMori.jsx           # 80-year day grid
+│       │   ├── Heatmap.jsx               # (legacy, unused in current UI)
+│       │   ├── RollupCard.jsx            # (legacy, unused in current UI)
+│       │   └── TrendChart.jsx            # (legacy, unused in current UI)
 │       └── views/
 │           ├── TodayView.jsx
-│           └── InsightsView.jsx
-└── package.json                          # root: scripts to build + deploy
+│           ├── HistoryView.jsx
+│           └── InsightsView.jsx          # hosts MementoMori
+├── scripts/
+│   ├── test-worker.mjs                   # API smoke tests (mock D1)
+│   └── gen-icons.cjs                     # PWA icon generator
+└── package.json                          # root: build/deploy/db scripts
 ```
+
+> **Note:** `DailySummaryCard`, `Heatmap`, `RollupCard`, and `TrendChart` remain in the tree but are no longer rendered by any view. They are candidates for removal.
 
 ---
 
@@ -224,6 +265,10 @@ name = "task-logger"
 main = "worker/src/index.js"
 compatibility_date = "2024-04-01"
 
+routes = [
+  { pattern = "task-logger.adduckivity.com", custom_domain = true }
+]
+
 [assets]
 directory = "./frontend/dist"
 binding = "ASSETS"
@@ -231,36 +276,30 @@ binding = "ASSETS"
 [[d1_databases]]
 binding = "DB"
 database_name = "task-logger-db"
-database_id = "YOUR_D1_DATABASE_ID"
-
-[vars]
-AUTH_TOKEN = "your-secret-token"
+database_id = "<your-d1-database-id>"
 ```
 
----
-
-## Implementation Steps
-
-1. **Initialize project**: `npm init -y`, install Wrangler, create `wrangler.toml`.
-2. **Database**: `npx wrangler d1 create task-logger-db`, copy ID into `wrangler.toml`, run schema via `npx wrangler d1 execute task-logger-db --file=./schema.sql`.
-3. **Worker API**: Implement endpoints in `worker/src/index.js`. Auth middleware checks `X-Auth-Token` for all routes except `/api/auth/login` and static asset paths.
-4. **Frontend scaffold**: `npm create vite@latest frontend -- --template react`, install `vite-plugin-pwa`, `recharts`, `date-fns`.
-5. **API client**: `api/client.js` wraps `fetch` with token header from localStorage and JSON handling.
-6. **Auth flow**: `LoginScreen.jsx` posts to `/api/auth/login`, stores token on success.
-7. **Today view**: `EntryForm.jsx` (validation, optimistic UI), `EntryList.jsx` (date-scoped fetch), edit/delete handlers.
-8. **Insights view**: `TrendChart.jsx` (Recharts LineChart), `Heatmap.jsx` (CSS grid + color scale), `RollupCard.jsx`.
-9. **PWA config**: configure `vite-plugin-pwa` (manifest, icons, workbox caching of app shell).
-10. **Build + deploy**: root `package.json` script chains `npm --prefix frontend run build && npx wrangler deploy`. Worker serves the static assets via `[assets]`.
-11. **Verify**: deploy, hit endpoints, test login flow, log a few entries, view charts.
+Secrets (set via `wrangler secret put`): `JWT_SECRET`. There is no `AUTH_TOKEN` since v1.1.0.
 
 ---
 
-## Out of Scope (v1)
+## Operational Constants (worker)
 
-- Multi-user accounts and row-level isolation.
-- Offline write queue or local-first sync.
-- Categories, tags, or filtering.
-- Time tracking / duration.
-- Export or import of data.
+| Constant | Value | Notes |
+|----------|-------|-------|
+| `BCRYPT_COST` | 12 | ~250ms per signup/login. |
+| `JWT_LIFETIME_SECONDS` | 7 days | Stateless, HS256. |
+| `RATE_LIMIT_MAX` / `_WINDOW_MS` | 5 / hour per IP | In-memory `Map` (best-effort on Workers). |
+| `MAX_USERS` | 50 | Owner (first user) excluded from the count. |
+| `TIMEZONE_OFFSET` | 7 (GMT+7) | Used for `log_date` "today" math on server and client. |
+
+---
+
+## Out of Scope (current)
+
+- Offline write queue or local-first sync (ADR 0002).
+- Password reset / email verification / profile editing (ADR 0003).
+- Categories, tags, time tracking, or duration.
+- Data export/import.
 - Push notifications.
-- Cloud sync across devices (data lives on the D1 instance; user accesses from any browser that knows the token).
+- API versioning (endpoints are unversioned `/api/...`).
