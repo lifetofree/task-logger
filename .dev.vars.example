@@ -1,0 +1,11 @@
+# Local development secrets.
+# Copy this file to `.dev.vars` and fill in your own values:
+#   cp .dev.vars.example .dev.vars
+#
+# `.dev.vars` is gitignored and must NEVER be committed.
+# For production, set secrets via: npx wrangler secret put JWT_SECRET
+
+# Secret used to sign HS256 JWTs (signup/login tokens). Use a long random string.
+# Generate one with, for example:
+#   node -e "console.log(require('crypto').randomBytes(48).toString('base64url'))"
+JWT_SECRET=replace-with-a-long-random-secret-string
