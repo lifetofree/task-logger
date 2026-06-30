@@ -59,14 +59,14 @@ export default function EntryItem({ entry, onChanged, onDeleted }) {
         <div className="form-row" style={{ marginTop: 8 }}>
           <div className="slider-header">
             <label style={{ fontSize: 12 }}>Happiness</label>
-            <span className="slider-value happy">{happiness}/10 <span className="slider-sub">{HAPPINESS_LABELS[happiness - 1]}</span></span>
+            <span className="slider-value happy">{happiness}/10 <span className="slider-sub">{HAPPINESS_LABELS[Math.round(happiness) - 1]}</span></span>
           </div>
           <input
             type="range"
-            min="1"
-            max="10"
-            step="1"
-            value={happiness}
+          min="1"
+          max="10"
+          step="0.1"
+          value={happiness}
             onChange={(e) => setHappiness(Number(e.target.value))}
             className="slider slider-happy"
           />
@@ -74,14 +74,14 @@ export default function EntryItem({ entry, onChanged, onDeleted }) {
         <div className="form-row">
           <div className="slider-header">
             <label style={{ fontSize: 12 }}>Progress</label>
-            <span className="slider-value progress">{progress * 10}%</span>
+            <span className="slider-value progress">{Math.round(progress * 10)}%</span>
           </div>
           <input
             type="range"
-            min="1"
-            max="10"
-            step="1"
-            value={progress}
+          min="1"
+          max="10"
+          step="0.1"
+          value={progress}
             onChange={(e) => setProgress(Number(e.target.value))}
             className="slider slider-progress"
           />
@@ -105,7 +105,7 @@ export default function EntryItem({ entry, onChanged, onDeleted }) {
         <p className="entry-name">{entry.name}</p>
         <div className="entry-meta">
           <span className="chip happy-chip">😊 {entry.happiness}/10</span>
-          <span className="chip progress-chip">📊 {entry.progress * 10}%</span>
+          <span className="chip progress-chip">📊 {Math.round(entry.progress * 10)}%</span>
           <span>{formatTime(entry.created_at)}</span>
         </div>
         {error && <div className="error-banner" style={{ marginTop: 8 }}>{error}</div>}

@@ -5,6 +5,21 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [4.7.0] - 2026-06-28
+
+### Changed
+- Happiness and Progress sliders now step by 0.1 (was 1), giving
+  finer-grained control (e.g. 7.3, 8.6).
+- Schema: `happiness`/`progress` columns changed from `INTEGER` to `REAL`.
+- Success rate now counts entries with `progress >= 9.5` (was exactly 10),
+  so near-complete tasks count without requiring the slider max.
+- Existing integer entries remain valid and render unchanged (7, not 7.0).
+
+### Added
+- Decimal rating round-trip and success-boundary test coverage.
+- ADR 0006 documenting the decimal-step decision and the success
+  redefinition.
+
 ## [4.6.0] - 2026-06-26
 
 ### Fixed

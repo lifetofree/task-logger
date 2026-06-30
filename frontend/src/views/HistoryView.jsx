@@ -67,7 +67,7 @@ export default function HistoryView() {
           <p className="entry-name">{entry.name}</p>
           <div className="entry-meta">
             <span className="chip happy-chip">😊 {entry.happiness}/10</span>
-            <span className="chip progress-chip">📊 {entry.progress * 10}%</span>
+            <span className="chip progress-chip">📊 {Math.round(entry.progress * 10)}%</span>
             <span>{entry.log_date}</span>
           </div>
         </div>

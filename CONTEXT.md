@@ -10,15 +10,15 @@ Core fields: task name, Happiness, Progress, Log Date. Owned by exactly one User
 
 ## Happiness
 
-A **1–10** subjective rating of how the user felt while working on a task. Represented in the UI as a gradient slider (red = awful at 1, green = perfect at 10) with descriptive labels (Awful, Bad, Meh, OK, Good, Great, Happy, Joyful, Amazing, Perfect). A per-entry input. *(Changed from 1–5 emoji in v2.0.0; see ADR 0005.)*
+A **1.0–10.0** subjective rating of how the user felt while working on a task, in **0.1** steps. Represented in the UI as a gradient slider (red = awful at 1, green = perfect at 10) with descriptive labels indexed by the nearest whole number (Awful, Bad, Meh, OK, Good, Great, Happy, Joyful, Amazing, Perfect). A per-entry input. *(Changed from 1–5 emoji in v2.0.0; decimal step added in v4.7.0; see ADR 0005, ADR 0006.)*
 
 ## Progress
 
-A **1–10** subjective rating of how much progress was made on a task. Represented in the UI as a slider shown in 10% increments (1 = 1%, 10 = 100%). A per-entry input. *(Changed from 1–5 in v2.0.0; see ADR 0005.)*
+A **1.0–10.0** subjective rating of how much progress was made on a task, in **0.1** steps. Represented in the UI as a slider shown in 10% increments (1 = 10%, 10 = 100%). A per-entry input. *(Changed from 1–5 in v2.0.0; decimal step added in v4.7.0; see ADR 0005, ADR 0006.)*
 
 ## Success Rate
 
-A **derived** metric, not a user input. Computed from Progress values across entries: the fraction of entries in a period that reached Progress level 10. Returned as a decimal (e.g. `0.67`), not a percentage.
+A **derived** metric, not a user input. Computed from Progress values across entries: the fraction of entries in a period with `progress >= 9.5`. Returned as a decimal (e.g. `0.67`), not a percentage. *(Redefinition from `= 10` to `>= 9.5` shipped in v4.7.0; see ADR 0006.)*
 
 ## Log Date
 

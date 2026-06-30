@@ -6,12 +6,12 @@ const PROGRESS_LABELS = ['1%', '10%', '20%', '30%', '40%', '50%', '60%', '70%', 
 
 function happinessLabel(v) {
   if (v == null) return '';
-  return HAPPINESS_LABELS[v - 1] || '';
+  return HAPPINESS_LABELS[Math.round(v) - 1] || '';
 }
 
 function progressLabel(v) {
   if (v == null) return '';
-  return PROGRESS_LABELS[v] || '';
+  return PROGRESS_LABELS[Math.round(v)] || '';
 }
 
 export default function EntryForm({ onSubmit, initialDate, submitting }) {
@@ -86,7 +86,7 @@ export default function EntryForm({ onSubmit, initialDate, submitting }) {
           type="range"
           min="1"
           max="10"
-          step="1"
+          step="0.1"
           value={happiness ?? 5}
           onChange={(e) => setHappiness(Number(e.target.value))}
           className="slider slider-happy"
@@ -96,14 +96,14 @@ export default function EntryForm({ onSubmit, initialDate, submitting }) {
         <div className="slider-header">
           <label>How much progress?</label>
           {progress != null && (
-            <span className="slider-value progress">{progress * 10}%</span>
+            <span className="slider-value progress">{Math.round(progress * 10)}%</span>
           )}
         </div>
         <input
           type="range"
           min="1"
           max="10"
-          step="1"
+          step="0.1"
           value={progress ?? 5}
           onChange={(e) => setProgress(Number(e.target.value))}
           className="slider slider-progress"

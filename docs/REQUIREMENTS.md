@@ -5,7 +5,7 @@
 
 ## Overview
 
-A multi-user web application and Progressive Web App (PWA) for daily task logging. Each user records tasks they worked on, how happy they felt doing them (1–10), and how much progress they made (1–10). Over time, the app surfaces a History of past entries and a Memento Mori life-grid visualization tied to the user's birthday, supporting personal reflection and habit-building.
+A multi-user web application and Progressive Web App (PWA) for daily task logging. Each user records tasks they worked on, how happy they felt doing them (1.0–10.0 in 0.1 steps), and how much progress they made (1.0–10.0 in 0.1 steps). Over time, the app surfaces a History of past entries and a Memento Mori life-grid visualization tied to the user's birthday, supporting personal reflection and habit-building.
 
 **Runtime**: Cloudflare Workers + Cloudflare D1 (SQLite at the edge).
 **Frontend**: React + Vite + vite-plugin-pwa, served as static assets from the same Worker.
@@ -34,15 +34,15 @@ Two stored entities: **User** and **Task Log Entry**.
 | `id` | TEXT | PRIMARY KEY | 32-char hex random identifier. |
 | `user_id` | TEXT | NOT NULL, FK -> users.id | Owning user (row-level isolation). |
 | `name` | TEXT | NOT NULL | Name of the task worked on (≤ 200 chars in UI). |
-| `happiness` | INTEGER | NOT NULL, CHECK 1..10 | Subjective feeling (1=awful, 10=perfect). |
-| `progress` | INTEGER | NOT NULL, CHECK 1..10 | Progress made (1=1%, 10=100%). |
+| `happiness` | REAL | NOT NULL, CHECK 1.0..10.0 | Subjective feeling (1=awful, 10=perfect); 0.1 step. |
+| `progress` | REAL | NOT NULL, CHECK 1.0..10.0 | Progress made (1=10%, 10=100%); 0.1 step. |
 | `log_date` | TEXT | NOT NULL | Calendar date `YYYY-MM-DD` (user-selectable). |
 | `created_at` | TEXT | NOT NULL DEFAULT CURRENT_TIMESTAMP | Row insert timestamp. |
 | `updated_at` | TEXT | NOT NULL DEFAULT CURRENT_TIMESTAMP | Last modification timestamp. |
 
 ### Derived Concepts (not stored)
 
-- **Daily Summary** — `{ avgHappiness, avgProgress, count, successRate }` for a single `log_date`. `successRate` = fraction of entries with `progress = 10`.
+- **Daily Summary** — `{ avgHappiness, avgProgress, count, successRate }` for a single `log_date`. `successRate` = fraction of entries with `progress >= 9.5`.
 - **Rollup Summary** — aggregate of the above over a period (week / month / 30d).
 - **Heatmap Cell** — `{ date, happiness, progress, count }` daily aggregates for a given year (used by the Memento Mori visualization).
 - **Days Lived / Days Ahead** — derived from `users.birthday` and today (80-year horizon) for the Memento Mori stats.
@@ -86,10 +86,10 @@ Two stored entities: **User** and **Task Log Entry**.
 
 **Acceptance Criteria**:
 - The Today tab shows an entry form.
-- Fields: Date (defaults to today, picker allows backfill, max = today), Task Name (text, ≤ 200 chars), Happiness (1–10 gradient slider, red→green), Progress (1–10 slider shown as 10% increments).
+- Fields: Date (defaults to today, picker allows backfill, max = today), Task Name (text, ≤ 200 chars), Happiness (1.0–10.0 gradient slider, 0.1 step, red→green), Progress (1.0–10.0 slider, 0.1 step, shown as 10% increments).
 - Submitting creates an entry via `POST /api/entries`.
 - Form clears on success; entry appears at top of the list for that date.
-- Validation: name non-empty, happiness 1–10, progress 1–10, `log_date` valid `YYYY-MM-DD`.
+- Validation: name non-empty, happiness 1.0–10.0, progress 1.0–10.0, `log_date` valid `YYYY-MM-DD`.
 
 ### US-4: View entries for a date (Today)
 
@@ -237,7 +237,7 @@ CREATE INDEX idx_entries_user_created ON entries (user_id, created_at);
 │       │   ├── LoginScreen.jsx
 │       │   └── SignupScreen.jsx
 │       ├── components/
-│       │   ├── EntryForm.jsx             # 1-10 sliders
+│       │   ├── EntryForm.jsx             # 1-10 sliders (0.1 step)
 │       │   ├── EntryItem.jsx             # inline edit/delete
 │       │   ├── DailySummaryCard.jsx      # (legacy, unused in current UI)
 │       │   ├── MementoMori.jsx           # 80-year day grid

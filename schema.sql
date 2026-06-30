@@ -13,8 +13,8 @@ CREATE TABLE entries (
   id TEXT PRIMARY KEY,
   user_id TEXT NOT NULL REFERENCES users(id),
   name TEXT NOT NULL,
-  happiness INTEGER NOT NULL CHECK (happiness BETWEEN 1 AND 10),
-  progress INTEGER NOT NULL CHECK (progress BETWEEN 1 AND 10),
+  happiness REAL NOT NULL CHECK (happiness >= 1.0 AND happiness <= 10.0),
+  progress REAL NOT NULL CHECK (progress >= 1.0 AND progress <= 10.0),
   log_date TEXT NOT NULL,
   created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP

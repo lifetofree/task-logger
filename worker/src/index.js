@@ -54,7 +54,7 @@ function isValidDateString(s) {
 }
 
 function isValidRating(n) {
-  return Number.isInteger(n) && n >= 1 && n <= 10;
+  return typeof n === 'number' && Number.isFinite(n) && n >= 1 && n <= 10;
 }
 
 const USERNAME_RE = /^[a-z0-9_]{3,32}$/;
@@ -240,8 +240,8 @@ async function handleCreateEntry(request, env, auth) {
   const { name, happiness, progress, log_date } = body;
   if (typeof name !== 'string' || name.trim().length === 0) return badRequest('Name required');
   if (name.length > MAX_NAME_LENGTH) return badRequest(`Name must be at most ${MAX_NAME_LENGTH} characters.`);
-  if (!isValidRating(happiness)) return badRequest('Happiness must be 1-10');
-  if (!isValidRating(progress)) return badRequest('Progress must be 1-10');
+  if (!isValidRating(happiness)) return badRequest('Happiness must be between 1 and 10');
+  if (!isValidRating(progress)) return badRequest('Progress must be between 1 and 10');
   const date = log_date || todayDateString();
   if (!isValidDateString(date)) return badRequest('Invalid log_date');
 
@@ -277,11 +277,11 @@ async function handleUpdateEntry(request, env, auth, id) {
     next.name = body.name.trim();
   }
   if ('happiness' in body) {
-    if (!isValidRating(body.happiness)) return badRequest('Happiness must be 1-10');
+    if (!isValidRating(body.happiness)) return badRequest('Happiness must be between 1 and 10');
     next.happiness = body.happiness;
   }
   if ('progress' in body) {
-    if (!isValidRating(body.progress)) return badRequest('Progress must be 1-10');
+    if (!isValidRating(body.progress)) return badRequest('Progress must be between 1 and 10');
     next.progress = body.progress;
   }
   if ('log_date' in body) {
@@ -336,7 +336,7 @@ async function handleDaily(request, env, auth) {
               COUNT(*) AS count,
               AVG(happiness) AS avg_happiness,
               AVG(progress) AS avg_progress,
-              SUM(CASE WHEN progress = 10 THEN 1 ELSE 0 END) AS success_count
+              SUM(CASE WHEN progress >= 9.5 THEN 1 ELSE 0 END) AS success_count
          FROM entries
         WHERE user_id = ? AND log_date BETWEEN ? AND ?
         GROUP BY log_date
@@ -369,7 +369,7 @@ async function handleRollup(request, env, auth) {
       `SELECT COUNT(*) AS count,
               AVG(happiness) AS avg_happiness,
               AVG(progress) AS avg_progress,
-              SUM(CASE WHEN progress = 10 THEN 1 ELSE 0 END) AS success_count
+              SUM(CASE WHEN progress >= 9.5 THEN 1 ELSE 0 END) AS success_count
          FROM entries
         WHERE user_id = ? AND log_date >= ?`
     )

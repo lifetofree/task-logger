@@ -126,7 +126,7 @@ function runSelect(tables, sql, args) {
         const list = groups[date];
         const sumH = list.reduce((sum, e) => sum + e.happiness, 0);
         const sumP = list.reduce((sum, e) => sum + e.progress, 0);
-        const successCount = list.filter((e) => e.progress === 10).length;
+        const successCount = list.filter((e) => e.progress >= 9.5).length;
         return {
           date,
           count: list.length,
@@ -147,7 +147,7 @@ function runSelect(tables, sql, args) {
     }
     const sumH = filtered.reduce((sum, e) => sum + e.happiness, 0);
     const sumP = filtered.reduce((sum, e) => sum + e.progress, 0);
-    const successCount = filtered.filter((e) => e.progress === 10).length;
+    const successCount = filtered.filter((e) => e.progress >= 9.5).length;
     return [{
       count: filtered.length,
       avg_happiness: sumH / filtered.length,
@@ -433,6 +433,59 @@ assert(!remaining.some((e) => e.id === e1.id), 'deleted entry is not present');
 // 21. 404 on missing route
 r = await call('GET', `/api/entries/does-not-exist`, null, aliceToken);
 assert(r.status === 404, 'missing entry returns 404');
+
+// 21b. Decimal ratings (0.1 step) round-trip
+const decimalDate = '2026-06-25';
+r = await call('POST', '/api/entries', {
+  name: 'Decimal entry',
+  happiness: 7.3,
+  progress: 8.6,
+  log_date: decimalDate,
+}, aliceToken);
+assert(r.status === 201, 'create entry with decimal ratings');
+const decEntry = await r.json();
+assert(decEntry.happiness === 7.3, 'decimal happiness stored exactly');
+assert(decEntry.progress === 8.6, 'decimal progress stored exactly');
+
+r = await call('GET', `/api/entries?date=${decimalDate}`, null, aliceToken);
+const decList = await r.json();
+assert(decList[0].happiness === 7.3, 'decimal happiness round-trips via GET');
+assert(decList[0].progress === 8.6, 'decimal progress round-trips via GET');
+
+// Update with decimals
+r = await call('PUT', `/api/entries/${decEntry.id}`, { happiness: 9.5 }, aliceToken);
+assert(r.status === 200, 'update with decimal happiness');
+const decUpdated = await r.json();
+assert(decUpdated.happiness === 9.5, 'decimal update applied');
+
+// 21c. Success now counts progress >= 9.5 (not just exactly 10).
+// Decimal entry has progress 8.6 (not success) then happiness 9.5.
+// Add an entry with progress 9.7 (success) and verify the daily rollup counts it.
+r = await call('POST', '/api/entries', {
+  name: 'Near-complete task',
+  happiness: 8.0,
+  progress: 9.7,
+  log_date: decimalDate,
+}, aliceToken);
+assert(r.status === 201, 'create entry with progress 9.7 (>= 9.5 = success)');
+
+r = await call('GET', `/api/insights/daily?from=${decimalDate}&to=${decimalDate}`, null, aliceToken);
+const decDaily = await r.json();
+// 2 entries on decimalDate: one progress 8.6 (not success), one 9.7 (success)
+assert(decDaily[0].count === 2, 'decimal day has 2 entries');
+assert(decDaily[0].successRate === 0.5, 'successRate is 0.5 (1 of 2 >= 9.5)');
+
+// Boundary: progress exactly 9.5 counts as success
+r = await call('POST', '/api/entries', {
+  name: 'Boundary task',
+  happiness: 6.0,
+  progress: 9.5,
+  log_date: '2026-06-26',
+}, aliceToken);
+assert(r.status === 201, 'create entry with progress 9.5 (boundary)');
+r = await call('GET', `/api/insights/daily?from=2026-06-26&to=2026-06-26`, null, aliceToken);
+const boundaryDaily = await r.json();
+assert(boundaryDaily[0].successRate === 1, 'progress 9.5 counts as success (>= 9.5)');
 
 // 22. Input length caps
 r = await call('POST', '/api/entries', {
