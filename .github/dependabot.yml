@@ -1,0 +1,54 @@
+# Dependabot configuration
+# Docs: https://docs.github.com/code-security/dependabot/dependabot-version-updates/configuration-options-for-the-dependabot.yml-file
+#
+# This project has two separate npm dependency trees (root + frontend),
+# each with its own package-lock.json, plus a GitHub Actions workflow.
+
+version: 2
+
+updates:
+  # Root npm dependencies (worker runtime: bcryptjs, jose; dev: wrangler)
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: "deps"
+      include: "scope"
+    groups:
+      # Group minor/patch dev-dependency bumps into one PR to reduce noise.
+      # Major bumps still get individual PRs (breaking changes need review).
+      npm-dev-minor:
+        dependency-type: development
+        update-types:
+          - minor
+          - patch
+
+  # Frontend npm dependencies (react, react-dom, vite, vite-plugin-pwa)
+  - package-ecosystem: npm
+    directory: /frontend
+    schedule:
+      interval: weekly
+      day: monday
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: "deps(frontend)"
+      include: "scope"
+    groups:
+      npm-frontend-minor:
+        update-types:
+          - minor
+          - patch
+
+  # GitHub Actions workflow versions (e.g. actions/checkout, actions/setup-node)
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: "deps(ci)"
+      include: "scope"
