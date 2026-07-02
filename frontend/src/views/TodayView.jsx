@@ -71,11 +71,10 @@ export default function TodayView() {
   return (
     <div className="view">
       <StreakCard streak={streak} />
+      <div className="today-spacer" />
       <EntryForm onSubmit={handleCreate} initialDate={logDate} submitting={submitting} />
       {error && <div className="error-banner">{error}</div>}
-      <div style={{ marginTop: 16 }}>
-        <h3 className="section-title">Entries for {logDate}</h3>
-      </div>
+      <h3 className="section-title">Entries for {logDate}</h3>
       {loading ? (
         <div className="empty-state"><span className="spinner" /></div>
       ) : entries.length === 0 ? (
@@ -92,6 +91,7 @@ export default function TodayView() {
           ))}
         </div>
       )}
+      <div className="today-spacer" />
       <WeeklyDigest />
     </div>
   );

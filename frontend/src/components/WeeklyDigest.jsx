@@ -79,24 +79,46 @@ export default function WeeklyDigest() {
   // Nothing logged this week yet — don't show an empty digest.
   if (daysThisWeek === 0) return null;
 
-  const arrow = delta == null ? '' : delta > 0 ? '↑' : delta < 0 ? '↓' : '→';
-  const deltaText = delta == null
-    ? ''
-    : ` ${arrow} ${Math.abs(delta).toFixed(1)} vs last week`;
-  const bestText = best ? ` · best: ${best.date.slice(5)} (${best.avgHappiness})` : '';
+  const deltaUp = delta != null && delta > 0;
+  const deltaDown = delta != null && delta < 0;
+  const deltaFlat = delta != null && delta === 0;
 
   return (
     <div className="card digest-card">
-      <div className="digest-line">
-        <strong>This week:</strong> {daysThisWeek} day{daysThisWeek === 1 ? '' : 's'} logged
-        {thisAvg != null && `, avg happiness ${thisAvg.toFixed(1)}${deltaText}`}
-        {bestText}
-      </div>
-      {successRate != null && (
-        <div className="digest-sub">
-          Success rate: {Math.round(successRate * 100)}%
+      <h4 className="digest-title">This Week</h4>
+      <div className="digest-grid">
+        <div className="digest-stat">
+          <span className="digest-stat-value">{daysThisWeek}</span>
+          <span className="digest-stat-label">day{daysThisWeek === 1 ? '' : 's'} logged</span>
         </div>
+        <div className="digest-stat">
+          <span className="digest-stat-value">
+            {thisAvg != null ? thisAvg.toFixed(1) : '—'}
+          </span>
+          <span className="digest-stat-label">avg happiness</span>
+          {delta != null && (
+            <span className={`digest-delta ${deltaUp ? 'up' : deltaDown ? 'down' : 'flat'}`}>
+              {deltaUp ? '↑' : deltaDown ? '↓' : '→'} {Math.abs(delta).toFixed(1)}
+            </span>
+          )}
+        </div>
+        <div className="digest-stat">
+          <span className="digest-stat-value">
+            {successRate != null ? `${Math.round(successRate * 100)}%` : '—'}
+          </span>
+          <span className="digest-stat-label">success</span>
+        </div>
+      </div>
+      {best && (
+        <p className="digest-footer">
+          Best day: {formatDate(best.date)} ({best.avgHappiness.toFixed(1)})
+        </p>
       )}
     </div>
   );
+}
+
+function formatDate(iso) {
+  const [, month, day] = iso.split('-');
+  return `${parseInt(month, 10)}/${parseInt(day, 10)}`;
 }

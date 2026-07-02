@@ -1,28 +1,37 @@
 import React from 'react';
 
 /**
- * Compact streak banner shown on TodayView as a daily nudge.
+ * Streak card for TodayView.
+ * Hero number layout: big "Day N" focal point, stat tiles below, subtle nudge.
  * Renders nothing until streak data is loaded.
  */
 export default function StreakCard({ streak }) {
   if (!streak) return null;
   const { currentStreak, longestStreak, daysLoggedThisYear, loggedToday } = streak;
 
+  const hint = loggedToday
+    ? null
+    : currentStreak > 0
+      ? 'Log today to keep it alive'
+      : 'Log today to start your streak';
+
   return (
     <div className="card streak-card">
-      <div className="streak-current">
+      <div className="streak-hero">
         <span className="streak-flame" role="img" aria-label="streak">🔥</span>
-        <span className="streak-day">Day {currentStreak}</span>
-        {!loggedToday && currentStreak > 0 && (
-          <span className="streak-hint">— log today to keep it alive</span>
-        )}
-        {!loggedToday && currentStreak === 0 && (
-          <span className="streak-hint">— log today to start</span>
-        )}
+        <span className="streak-day">{currentStreak}</span>
+        <span className="streak-day-label">day{currentStreak === 1 ? '' : 's'}</span>
       </div>
-      <div className="streak-stats">
-        <span title="Longest streak">Best: <strong>{longestStreak}</strong></span>
-        <span title="Days logged this year">This year: <strong>{daysLoggedThisYear}</strong></span>
+      {hint && <p className="streak-hint">{hint}</p>}
+      <div className="streak-tiles">
+        <div className="streak-tile">
+          <span className="streak-tile-value">{longestStreak}</span>
+          <span className="streak-tile-label">Best</span>
+        </div>
+        <div className="streak-tile">
+          <span className="streak-tile-value">{daysLoggedThisYear}</span>
+          <span className="streak-tile-label">This year</span>
+        </div>
       </div>
     </div>
   );

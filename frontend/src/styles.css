@@ -859,3 +859,150 @@ input, textarea, select {
   padding-bottom: 6px;
   border-bottom: 1px solid var(--border);
 }
+
+/* ─── Today view spacing ─── */
+.today-spacer {
+  height: 16px;
+}
+
+/* ─── Streak card (hero number + stat tiles) ─── */
+.streak-card {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 20px;
+}
+
+.streak-hero {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.streak-flame {
+  font-size: 28px;
+  line-height: 1;
+}
+
+.streak-day {
+  font-size: 36px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1;
+}
+
+.streak-day-label {
+  font-size: 15px;
+  color: var(--text-dim);
+  font-weight: 500;
+}
+
+.streak-hint {
+  margin: -4px 0 0 0;
+  font-size: 13px;
+  color: var(--text-dim);
+  line-height: 1.4;
+}
+
+.streak-tiles {
+  display: flex;
+  gap: 10px;
+}
+
+.streak-tile {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  background: var(--bg-elev-2);
+  border-radius: 10px;
+  padding: 10px 8px;
+}
+
+.streak-tile-value {
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.streak-tile-label {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-dim);
+}
+
+/* ─── Weekly digest (stat grid + delta badge) ─── */
+.digest-card {
+  padding: 20px;
+}
+
+.digest-title {
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-dim);
+  margin: 0 0 14px 0;
+}
+
+.digest-grid {
+  display: flex;
+  gap: 10px;
+}
+
+.digest-stat {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  background: var(--bg-elev-2);
+  border-radius: 10px;
+  padding: 12px 8px;
+  text-align: center;
+}
+
+.digest-stat-value {
+  font-size: 22px;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.digest-stat-label {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-dim);
+}
+
+.digest-delta {
+  display: inline-block;
+  margin-top: 2px;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 1px 6px;
+  border-radius: 6px;
+}
+
+.digest-delta.up {
+  color: var(--success);
+  background: rgba(80, 130, 60, 0.15);
+}
+
+.digest-delta.down {
+  color: var(--danger);
+  background: rgba(160, 56, 40, 0.15);
+}
+
+.digest-delta.flat {
+  color: var(--text-dim);
+  background: rgba(124, 94, 56, 0.12);
+}
+
+.digest-footer {
+  margin: 12px 0 0 0;
+  font-size: 12px;
+  color: var(--text-dim);
+  line-height: 1.4;
+}
