@@ -10,7 +10,9 @@ Built on **Cloudflare Workers + D1** (SQLite at the edge) with a **React + Vite*
 
 ## Features
 
-- **Today** — log entries with 1–10 happiness/progress sliders; inline edit & delete.
+- **Today** — log entries with 1–10 happiness/progress sliders (0.1 step); inline edit & delete.
+- **Streaks** — current & longest streak, days logged this year. A daily nudge to keep the chain alive.
+- **Weekly digest** — compares your last 7 days against the prior 7 (avg happiness delta, best day, success rate).
 - **History** — browse the last 7 days, search across all entries by name/date/rating.
 - **Memento** — an 80-year, day-by-day life grid (from your birthday), each day colored by average happiness. Auto-scrolls to today.
 - **Multi-user** — username/password signup, JWT sessions, per-user data isolation.
@@ -74,7 +76,7 @@ API smoke tests run the Worker against a mock D1:
 node scripts/test-worker.mjs
 ```
 
-Covers signup, login, JWT auth, entry CRUD, row-level isolation, validation, and insights math (39 assertions).
+Covers signup, login, JWT auth, entry CRUD, row-level isolation, validation, insights math, and streaks (57 assertions).
 
 ---
 
@@ -107,7 +109,7 @@ Covers signup, login, JWT auth, entry CRUD, row-level isolation, validation, and
 ├── wrangler.toml            # Worker, D1, custom domain config
 ├── frontend/src/
 │   ├── views/               # TodayView, HistoryView, InsightsView (Memento Mori)
-│   ├── components/          # EntryForm, EntryItem, MementoMori
+│   ├── components/          # EntryForm, EntryItem, MementoMori, StreakCard, WeeklyDigest
 │   ├── auth/                # SignupScreen, LoginScreen
 │   └── api/client.js        # fetch wrapper + session storage
 ├── scripts/test-worker.mjs  # API smoke tests
@@ -123,4 +125,4 @@ Covers signup, login, JWT auth, entry CRUD, row-level isolation, validation, and
 
 ---
 
-&copy; adduckivity · v4.6.0
+&copy; adduckivity · v4.8.0

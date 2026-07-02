@@ -115,6 +115,7 @@ export const api = {
     return request('GET', `/api/insights/daily${qs ? `?${qs}` : ''}`);
   },
   rollup: (period) => request('GET', `/api/insights/rollup?period=${period}`),
+  streak: () => request('GET', '/api/insights/streak'),
   heatmap: (year) => {
     const qs = year ? `?year=${year}` : '';
     return request('GET', `/api/insights/heatmap${qs}`);

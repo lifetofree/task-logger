@@ -2,16 +2,19 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { api } from '../api/client.js';
 import EntryForm from '../components/EntryForm.jsx';
 import EntryItem from '../components/EntryItem.jsx';
+import StreakCard from '../components/StreakCard.jsx';
+import WeeklyDigest from '../components/WeeklyDigest.jsx';
 import { todayISO } from '../lib/date.js';
 
 export default function TodayView() {
   const [logDate, setLogDate] = useState(todayISO());
   const [entries, setEntries] = useState([]);
+  const [streak, setStreak] = useState(null);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
 
-  const load = useCallback(async () => {
+  const loadEntries = useCallback(async () => {
     setLoading(true);
     setError('');
     try {
@@ -24,9 +27,19 @@ export default function TodayView() {
     }
   }, [logDate]);
 
+  const loadStreak = useCallback(async () => {
+    try {
+      const data = await api.streak();
+      setStreak(data);
+    } catch {
+      // streak is non-critical; leave whatever we had
+    }
+  }, []);
+
   useEffect(() => {
-    load();
-  }, [load]);
+    loadEntries();
+    loadStreak();
+  }, [loadEntries, loadStreak]);
 
   async function handleCreate(payload) {
     setSubmitting(true);
@@ -38,6 +51,8 @@ export default function TodayView() {
       if (payload.log_date !== logDate) {
         setLogDate(payload.log_date);
       }
+      // Streak may have changed (logged today, extended run).
+      loadStreak();
     } finally {
       setSubmitting(false);
     }
@@ -49,10 +64,13 @@ export default function TodayView() {
 
   function handleDeleted(id) {
     setEntries((prev) => prev.filter((e) => e.id !== id));
+    // Deleting today's entry could break the streak.
+    loadStreak();
   }
 
   return (
     <div className="view">
+      <StreakCard streak={streak} />
       <EntryForm onSubmit={handleCreate} initialDate={logDate} submitting={submitting} />
       {error && <div className="error-banner">{error}</div>}
       <div style={{ marginTop: 16 }}>
@@ -74,6 +92,7 @@ export default function TodayView() {
           ))}
         </div>
       )}
+      <WeeklyDigest />
     </div>
   );
 }

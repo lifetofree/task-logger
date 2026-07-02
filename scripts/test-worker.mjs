@@ -138,7 +138,16 @@ function runSelect(tables, sql, args) {
     }
   }
 
-  // 9. Rollup Insights
+  // 9. Streak Insights — SELECT DISTINCT log_date FROM entries WHERE user_id = ? ORDER BY log_date DESC
+  if (/SELECT DISTINCT log_date FROM entries WHERE user_id = \?/i.test(sql)) {
+    const [userId] = args;
+    const dates = Array.from(new Set(
+      tables.entries.filter((e) => e.user_id === userId).map((e) => e.log_date)
+    ));
+    return dates.map((log_date) => ({ log_date }));
+  }
+
+  // 10. Rollup Insights
   if (/FROM entries\s+WHERE user_id = \? AND log_date >= \?/i.test(sql)) {
     const [userId, from] = args;
     const filtered = tables.entries.filter((e) => e.user_id === userId && e.log_date >= from);
@@ -242,6 +251,16 @@ function assert(cond, msg) {
   console.log('  ok:', msg);
 }
 
+// The worker computes "today" in GMT+7; replicate that here so date-sensitive
+// assertions (rollup window, streaks) line up regardless of when tests run.
+function tzDate(offsetDays = 0) {
+  const local = new Date(Date.now() + 7 * 60 * 60 * 1000);
+  local.setUTCDate(local.getUTCDate() + offsetDays);
+  return local.toISOString().slice(0, 10);
+}
+const tzToday = () => tzDate(0);
+const tzDaysAgo = (n) => tzDate(-n);
+
 console.log('Running worker API smoke test...');
 
 // 1. Signup a new user (Alice)
@@ -318,12 +337,12 @@ r = await call('POST', '/api/entries', {
   name: 'x',
   happiness: 8,
   progress: 9,
-  log_date: '2026-06-24',
+  log_date: tzToday(),
 });
 assert(r.status === 401, 'unauthenticated create rejected');
 
 // 8. Alice creates three entries
-const today = '2026-06-24';
+const today = tzToday();
 r = await call('POST', '/api/entries', {
   name: 'Built API',
   happiness: 8,
@@ -393,8 +412,8 @@ assert(updated.happiness === 10, 'updated happiness applied');
 r = await call('PUT', `/api/entries/${e1.id}`, { happiness: 10 }, bobToken);
 assert(r.status === 404, 'bob cannot update alice entry');
 
-// 15. Daily insights
-r = await call('GET', `/api/insights/daily?from=2026-06-20&to=2026-06-30`, null, aliceToken);
+// 15. Daily insights (range spans today so the entries are always in-window)
+r = await call('GET', `/api/insights/daily?from=${tzDaysAgo(10)}&to=${tzDaysAgo(-2)}`, null, aliceToken);
 assert(r.status === 200, 'alice daily insights');
 const daily = await r.json();
 assert(daily.length === 1, 'one day in range');
@@ -410,8 +429,8 @@ const rollup = await r.json();
 assert(rollup.count === 3, 'rollup count is 3');
 assert(rollup.avgHappiness === 8.67, 'rollup avgHappiness is correct');
 
-// 17. Heatmap
-r = await call('GET', `/api/insights/heatmap?year=2026`, null, aliceToken);
+// 17. Heatmap (current year so entries are always in-window)
+r = await call('GET', `/api/insights/heatmap?year=${tzToday().slice(0, 4)}`, null, aliceToken);
 assert(r.status === 200, 'alice heatmap');
 const heat = await r.json();
 assert(heat.length === 1, 'heatmap contains one day');
@@ -435,7 +454,7 @@ r = await call('GET', `/api/entries/does-not-exist`, null, aliceToken);
 assert(r.status === 404, 'missing entry returns 404');
 
 // 21b. Decimal ratings (0.1 step) round-trip
-const decimalDate = '2026-06-25';
+const decimalDate = tzDaysAgo(1);
 r = await call('POST', '/api/entries', {
   name: 'Decimal entry',
   happiness: 7.3,
@@ -480,12 +499,78 @@ r = await call('POST', '/api/entries', {
   name: 'Boundary task',
   happiness: 6.0,
   progress: 9.5,
-  log_date: '2026-06-26',
+  log_date: tzDaysAgo(2),
 }, aliceToken);
 assert(r.status === 201, 'create entry with progress 9.5 (boundary)');
-r = await call('GET', `/api/insights/daily?from=2026-06-26&to=2026-06-26`, null, aliceToken);
+r = await call('GET', `/api/insights/daily?from=${tzDaysAgo(2)}&to=${tzDaysAgo(2)}`, null, aliceToken);
 const boundaryDaily = await r.json();
 assert(boundaryDaily[0].successRate === 1, 'progress 9.5 counts as success (>= 9.5)');
+
+// 21d. Streaks & consistency metrics.
+// The worker computes "today" in GMT+7; tzToday/tzDaysAgo (defined at top) match it.
+
+// Fresh user (carol) has zero streak.
+r = await call('POST', '/api/auth/signup', {
+  username: 'carol',
+  password: 'password789',
+  birthday: '1995-03-03',
+});
+assert(r.status === 201, 'signup carol (streak test user)');
+const carolData = await r.json();
+const carolToken = carolData.token;
+
+r = await call('GET', '/api/insights/streak', null, carolToken);
+assert(r.status === 200, 'carol streak endpoint reachable');
+let carolStreak = await r.json();
+assert(carolStreak.currentStreak === 0, 'fresh user currentStreak is 0');
+assert(carolStreak.longestStreak === 0, 'fresh user longestStreak is 0');
+assert(carolStreak.totalDaysLogged === 0, 'fresh user totalDaysLogged is 0');
+assert(carolStreak.loggedToday === false, 'fresh user loggedToday is false');
+
+// Carol logs today → currentStreak 1, loggedToday true.
+r = await call('POST', '/api/entries', {
+  name: 'Streak start',
+  happiness: 7,
+  progress: 8,
+  log_date: tzToday(),
+}, carolToken);
+assert(r.status === 201, 'carol logs today');
+r = await call('GET', '/api/insights/streak', null, carolToken);
+carolStreak = await r.json();
+assert(carolStreak.currentStreak === 1, 'currentStreak is 1 after logging today');
+assert(carolStreak.loggedToday === true, 'loggedToday is true');
+assert(carolStreak.longestStreak === 1, 'longestStreak is 1');
+
+// Carol logs yesterday and 2 days ago → currentStreak 3, longest 3.
+await call('POST', '/api/entries', {
+  name: 'Yesterday', happiness: 6, progress: 7, log_date: tzDaysAgo(1),
+}, carolToken);
+await call('POST', '/api/entries', {
+  name: 'Two days ago', happiness: 6, progress: 7, log_date: tzDaysAgo(2),
+}, carolToken);
+r = await call('GET', '/api/insights/streak', null, carolToken);
+carolStreak = await r.json();
+assert(carolStreak.currentStreak === 3, 'currentStreak is 3 (today+yesterday+2ago)');
+assert(carolStreak.longestStreak === 3, 'longestStreak is 3');
+
+// Carol logs a separate 2-day run 10 days ago (gap breaks current streak only
+// from the historical side; current streak stays 3). longestStreak stays 3.
+await call('POST', '/api/entries', {
+  name: 'Past A', happiness: 5, progress: 5, log_date: tzDaysAgo(10),
+}, carolToken);
+await call('POST', '/api/entries', {
+  name: 'Past B', happiness: 5, progress: 5, log_date: tzDaysAgo(11),
+}, carolToken);
+r = await call('GET', '/api/insights/streak', null, carolToken);
+carolStreak = await r.json();
+assert(carolStreak.currentStreak === 3, 'currentStreak unchanged (3) after older entries');
+assert(carolStreak.longestStreak === 3, 'longestStreak still 3 (older run is only 2)');
+assert(carolStreak.totalDaysLogged === 5, 'totalDaysLogged is 5');
+
+// Cross-user isolation: Bob (who has 1 entry on a fixed past date) has his own streak.
+r = await call('GET', '/api/insights/streak', null, bobToken);
+const bobStreak = await r.json();
+assert(bobStreak.totalDaysLogged === 1, 'bob totalDaysLogged is 1 (independent of carol)');
 
 // 22. Input length caps
 r = await call('POST', '/api/entries', {
@@ -512,14 +597,12 @@ r = await call('POST', '/api/auth/signup', {
 assert(r.status === 400, 'rejects password longer than 1024 chars');
 
 // 23. Signup user cap (MAX_USERS = 50, owner excluded).
-// Alice was the first user (owner) and Bob the second, so the DB already
-// holds 2 users. We fill to the boundary and verify the 51st non-owner is rejected.
-// Each signup uses a fresh CF-Connecting-IP above to bypass the per-IP rate limit.
-// We already have alice (owner) + bob = 2 users. Create 48 more to reach 50 non-owner+owner
-// (owner excluded, so effective non-owner count must reach 50 for a 403).
-// Add (50 - 1 existing non-owner 'bob') = 49 more non-owners; the 50th should succeed,
-// the 51st should be rejected.
-for (let i = 0; i < 49; i++) {
+// Alice was the first user (owner, excluded from the count). The DB now holds
+// alice (owner) + bob + carol = 2 non-owner users. We fill to the boundary and
+// verify the 51st non-owner is rejected. Each signup uses a fresh CF-Connecting-IP
+// above to bypass the per-IP rate limit.
+// Need (50 - 2 existing non-owners) = 48 more; the 50th non-owner succeeds, 51st rejected.
+for (let i = 0; i < 48; i++) {
   r = await call('POST', '/api/auth/signup', {
     username: `capuser${i}`,
     password: 'password123',

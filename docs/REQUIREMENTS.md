@@ -1,7 +1,7 @@
 # Task Logger: Requirements & Specification
 
-> **Version:** 4.6.0 (2026-06-26). This document reflects the *currently deployed* product.
-> The original v1.0 single-user spec is superseded; see ADRs 0001–0005 for the decision history.
+> **Version:** 4.8.0 (2026-07-02). This document reflects the *currently deployed* product.
+> The original v1.0 single-user spec is superseded; see ADRs 0001–0007 for the decision history.
 
 ## Overview
 
@@ -149,6 +149,32 @@ Two stored entities: **User** and **Task Log Entry**.
 - Data fetched via `GET /api/insights/heatmap?year=YYYY` for each year from birthday to birthday+80, batched 10 years at a time.
 - If no birthday is set, an empty state explains signup requires a birthday.
 
+### US-9: Streaks & consistency metrics
+
+**As a** returning user,
+**I want to** see my current and longest logging streak,
+**So that** I'm nudged to log consistently and "not break the chain".
+
+**Acceptance Criteria**:
+- A StreakCard on the Today view shows the current streak (🔥 Day N), longest streak, and days logged this year.
+- `currentStreak` counts consecutive days ending today. If today is not yet logged, it counts from yesterday (grace period — the streak isn't "broken" mid-day).
+- `loggedToday` indicates whether today has at least one entry.
+- The card refetches after create/delete on the Today view so it stays current.
+- Data via `GET /api/insights/streak` → `{ currentStreak, longestStreak, daysLoggedThisYear, totalDaysLogged, loggedToday }`.
+
+### US-10: Weekly reflection digest
+
+**As a** user reviewing my week,
+**I want to** see how this week compares to last week,
+**So that** I notice trends in my happiness and consistency.
+
+**Acceptance Criteria**:
+- A WeeklyDigest card on the Today view summarizes the last 7 days vs the prior 7 days.
+- Shows: days logged this week, average happiness with a directional delta (↑/↓/→) vs last week, best day (date + happiness), and success rate.
+- Hidden entirely if no entries exist in the current week (no empty-state noise).
+- Reuses the existing `GET /api/insights/daily` endpoint (no new backend call beyond streaks).
+
+
 ---
 
 ## API Endpoints
@@ -167,6 +193,7 @@ All `/api/*` routes except `signup`/`login` require `Authorization: Bearer <jwt>
 | GET | `/api/history` | — | `Entry[]` | All entries for the user, newest first. |
 | GET | `/api/insights/daily?from=&to=` | date range | `DailySummary[]` | Daily aggregates for charts/rollups. |
 | GET | `/api/insights/rollup?period=week\|month\|30d` | — | `RollupSummary` | Period rollup. |
+| GET | `/api/insights/streak` | — | `StreakSummary` | Current/longest streak, days logged this year, total, loggedToday. |
 | GET | `/api/insights/heatmap?year=YYYY` | optional year | `HeatmapCell[]` | Daily aggregates for one year. |
 
 **Cross-user isolation**: every entry and insights query filters by `user_id` from the JWT. A request for another user's entry returns 404 (no leak).

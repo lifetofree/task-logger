@@ -390,6 +390,71 @@ async function handleRollup(request, env, auth) {
   });
 }
 
+// Return the YYYY-MM-DD of the day BEFORE the given date, computed in UTC
+// (avoids local-timezone drift when subtracting days from a calendar date).
+function dayBefore(dateStr) {
+  const dt = new Date(dateStr + 'T00:00:00Z');
+  dt.setUTCDate(dt.getUTCDate() - 1);
+  return dt.toISOString().slice(0, 10);
+}
+
+// Compute streak metrics from a list of distinct log_date strings (YYYY-MM-DD),
+// sorted DESCENDING (most recent first).
+function computeStreaks(dates, today, yesterday) {
+  const set = new Set(dates);
+  const totalDaysLogged = dates.length;
+
+  // currentStreak: consecutive days ending today (grace: if today not yet
+  // logged, count from yesterday so the streak isn't "broken" mid-day).
+  let currentStreak = 0;
+  const startCursor = set.has(today) ? today : set.has(yesterday) ? yesterday : null;
+  if (startCursor) {
+    let d = startCursor;
+    while (set.has(d)) {
+      currentStreak++;
+      d = dayBefore(d);
+    }
+  }
+
+  // longestStreak: longest run of consecutive days across all history.
+  let longestStreak = 0;
+  let run = 0;
+  let prev = null;
+  for (const d of dates) {
+    if (prev === null) {
+      run = 1;
+    } else {
+      // prev is the day AFTER d (DESC order); check if d is exactly one day before prev.
+      run = dayBefore(prev) === d ? run + 1 : 1;
+    }
+    longestStreak = Math.max(longestStreak, run);
+    prev = d;
+  }
+
+  const currentYear = today.slice(0, 4);
+  const daysLoggedThisYear = dates.filter((d) => d.slice(0, 4) === currentYear).length;
+
+  return {
+    currentStreak,
+    longestStreak,
+    daysLoggedThisYear,
+    totalDaysLogged,
+    loggedToday: set.has(today),
+  };
+}
+
+async function handleStreak(request, env, auth) {
+  if (request.method !== 'GET') return badRequest('GET required');
+  const { results } = await env.DB
+    .prepare(
+      'SELECT DISTINCT log_date FROM entries WHERE user_id = ? ORDER BY log_date DESC'
+    )
+    .bind(auth.user.id)
+    .all();
+  const dates = results.map((r) => r.log_date).sort((a, b) => b.localeCompare(a));
+  return jsonResponse(computeStreaks(dates, todayDateString(), dateNDaysAgo(1)));
+}
+
 async function handleHeatmap(request, env, auth) {
   if (request.method !== 'GET') return badRequest('GET required');
   const url = new URL(request.url);
@@ -448,6 +513,7 @@ async function route(request, env) {
 
   if (path === '/api/insights/daily') return handleDaily(request, env, auth);
   if (path === '/api/insights/rollup') return handleRollup(request, env, auth);
+  if (path === '/api/insights/streak') return handleStreak(request, env, auth);
   if (path === '/api/insights/heatmap') return handleHeatmap(request, env, auth);
   if (path === '/api/history') return handleHistory(request, env, auth);
 

@@ -4,6 +4,47 @@ Reviews are appended below, newest first. Each review references the product ver
 
 ---
 
+## Review 4 — v4.8.0 (2026-07-02)
+
+**Reviewer context**: Tier 1 feature release — streaks, weekly digest, and a documentation sync that also corrects the v4.7.0 doc drift. Implementation of a PO-defined retention roadmap.
+
+### Executive Summary
+
+Two new frontend-facing features (StreakCard, WeeklyDigest) backed by one new backend endpoint (`GET /api/insights/streak`). The weekly digest deliberately reuses the existing `/api/insights/daily` endpoint — no backend change for the digest, keeping the surface area minimal. Test suite expanded to 57 assertions (from 39) and verified green. Two pre-existing latent defects were found and fixed during this work: a date-sensitive rollup test (false failure after the test date aged out of the 7-day window) and a UTC-vs-local streak day-subtraction bug.
+
+**Status: Approved**, with the existing non-blocking follow-ups still carried.
+
+### Scope Reviewed
+
+- `worker/src/index.js` — new `handleStreak` + `computeStreaks` + `dayBefore` (UTC date math).
+- `frontend/src/components/StreakCard.jsx`, `WeeklyDigest.jsx` — new.
+- `frontend/src/views/TodayView.jsx` — streak fetch + refetch on create/delete; mounts both cards.
+- `frontend/src/api/client.js` — `streak()` method.
+- `scripts/test-worker.mjs` — streak mock branch, 13 new assertions, today-relative dates throughout.
+- Docs — README, REQUIREMENTS (US-9/US-10), STATUS, CHANGELOG, ADR 0007.
+
+### Verification
+
+- `node scripts/test-worker.mjs` → 57/57 ok, `All API tests passed.`
+- `npm run build` (frontend) → clean, PWA manifest generated.
+
+### Defects Found & Fixed in This Pass
+
+1. **Test date-sensitivity** (pre-existing, latent) — fixed-date test entries fell outside the rollup's real-time 7-day window once the calendar advanced past them. Tests now use `tzToday()`/`tzDaysAgo()`.
+2. **Streak UTC day-math** (introduced then fixed) — `new Date(d + 'T00:00:00')` drifts in non-UTC environments; fixed with an explicit `...T00:00:00Z` parse in `dayBefore`.
+3. **User-cap test accounting** — the streak test added a third user (carol); cap-fill loop adjusted from 49 to 48 to match.
+
+### Carryover Follow-ups (unchanged from Review 3)
+
+| # | Item | Severity | Note |
+|---|------|----------|------|
+| 1 | Test mock is regex-based, not real SQLite | Medium | Replace with `better-sqlite3` |
+| 2 | In-memory rate limiter not shared across isolates | Medium | Move to KV/Durable Objects if scaling |
+| 3 | `TIMEZONE_OFFSET = 7` hardcoded + duplicated | Low | Centralize |
+| 4 | History & Memento Mori UI have no automated tests | Coverage | Only APIs are tested |
+
+---
+
 ## Review 3 — v4.6.0 (2026-06-27)
 
 **Reviewer context**: Documentation-sync review. The deployed product had drifted far from `REQUIREMENTS.md` / `CONTEXT.md` (which still described a v1.0–v1.2 single-user, 1–5-scale app). This review covers both the production code at v4.6.0 and the documentation update performed in this pass.

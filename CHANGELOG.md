@@ -5,6 +5,37 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [4.8.0] - 2026-07-02
+
+### Added
+- **Streaks** — new `GET /api/insights/streak` endpoint returns current streak
+  (consecutive days ending today, with a mid-day grace period), longest streak,
+  days logged this year, total days logged, and `loggedToday`.
+- **StreakCard** component on the Today view: a daily nudge showing the current
+  streak (🔥 Day N), best streak, and days logged this year. Refetches after
+  create/delete so it stays current.
+- **WeeklyDigest** component on the Today view: compares the last 7 days
+  against the prior 7 (days logged, avg-happiness delta with ↑/↓/→, best day,
+  success rate). Reuses the existing daily insights endpoint — no new backend
+  call beyond streaks.
+- US-9 (streaks) and US-10 (weekly digest) added to `docs/REQUIREMENTS.md`.
+- ADR 0007 documenting the retention-focused feature decision.
+
+### Fixed
+- **Test date-sensitivity** — the smoke test used fixed dates (`2026-06-24`)
+  that fell outside the rollup window when run on later days, causing a false
+  failure. Tests now use timezone-correct, today-relative dates.
+- **Streak day-math** — `computeStreaks` now subtracts days in UTC
+  (`...T00:00:00Z`) instead of local time, preventing off-by-one streaks in
+  non-UTC environments.
+- **User-cap test** — adjusted the cap-fill loop to account for the streak
+  test's extra user (`carol`).
+
+### Changed
+- Documentation synced to v4.8.0 (`README.md`, `REQUIREMENTS.md`, `STATUS.md`,
+  `REVIEWS.md`). README features list, component tree, and assertion count
+  updated to reflect streaks + digest.
+
 ## [4.7.0] - 2026-06-28
 
 ### Changed
