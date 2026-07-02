@@ -2,34 +2,39 @@
 
 ## Current Stage
 
-- **Role**: Reviewer (Stage 6) — **Complete** (v4.8.2)
-- **Status**: 🟢 Approved with doc/version-drift follow-ups (see Review 5).
+- **Role**: DevOps (Stage 7) — **Complete** (v4.8.2 deployed 2026-07-02)
+- **Status**: 🟢 Shipped; v4.8.2 is live in production.
 - **Last Updated**: 2026-07-02
 
 ---
 
 ## SDLC Progress Tracker
 
-- [x] **Stage 1: Product Owner** — Tier 1 roadmap (streaks, weekly digest, doc sync) approved.
-- [x] **Stage 2: Product Manager** — `REQUIREMENTS.md` synced to v4.8.0 (Review 4). Drift re-detected in Review 5; see follow-ups.
+- [x] **Stage 1: Product Owner** — Tier 1 roadmap (streaks, weekly digest) approved; v4.8.2 release-discipline fix added.
+- [x] **Stage 2: Product Manager** — `REQUIREMENTS.md` schema block corrected to REAL 1.0–10.0 (was INTEGER post-v4.7.0 drift).
 - [x] **Stage 3: Tech Lead** — Tech Stack defined (`wrangler.toml`).
 - [x] **Stage 4: Architect** — Database schema (`schema.sql`) and APIs designed; ADRs 0001–0007 current.
-- [x] **Stage 5: Coder** — Test suite green: 78/78 assertions across signup, login, JWT auth, CRUD, row-level isolation, validation, insights math, streaks, user cap (Review 5).
-- [x] **Stage 6: Reviewer** — v4.8.1 + v4.8.2 review logged (see `docs/REVIEWS.md` Review 5). Backend approved; two Medium doc drifts to clean.
-- [x] **Stage 7: DevOps** — CI pipeline (`.github/workflows/ci.yml`), README, and local-dev docs in place; `npm audit` 0 vulnerabilities in both trees.
+- [x] **Stage 5: Coder** — Test suite green: 78/78 assertions across signup, login, JWT auth, CRUD, row-level isolation, validation, insights math, streaks, user cap.
+- [x] **Stage 6: Reviewer** — Reviews 4 (v4.8.0) and 5 (v4.8.1/v4.8.2) logged. Backend approved; doc/version drifts fixed in this release.
+- [x] **Stage 7: DevOps** — Deployed v4.8.2 to production via `wrangler deploy`. CI pipeline (`.github/workflows/ci.yml`), README, local-dev docs in place; `npm audit` 0 vulnerabilities in both trees.
 
 ---
 
 ## Handoff Notes (v4.8.2)
 
-1. **Backend verified green** — `node scripts/test-worker.mjs` passes 78/78 assertions (signup, login, JWT auth, CRUD, row-level isolation, validation, insights math, streaks, user cap).
-2. **Security clean** — `npm audit` reports 0 vulnerabilities in both root and frontend trees.
-3. **Frontend builds clean** — `npm --prefix frontend run build` produces PWA manifest + service worker in 87 ms (Vite 8 / Rolldown).
-4. **Documentation/version drifts outstanding** (do these in the next sprint, before any marketing reference to "v4.8.2"):
-   - **D1 (Med)** Recompute the inline `CREATE TABLE entries` block in `docs/REQUIREMENTS.md` lines 214–222 — it's still showing the pre-v4.7.0 INTEGER schema. The actual `schema.sql` is `REAL` 1.0–10.0 per ADR 0006.
-   - **D2 (Med)** v4.8.2 commit `6fa8b3b` (UX redesign of StreakCard/WeeklyDigest + 147 lines of new CSS) is missing from `CHANGELOG.md`, `README.md`, and `STATUS.md`, and `frontend/src/version.js` is still `4.8.1`. Production footer is therefore displaying the wrong version.
-   - **D3–D6 (Low)** ADR listing in REQUIREMENTS.md is stale, the legacy-components note is stale, and `SignupScreen.jsx` birthday clamp uses UTC instead of `lib/date.js`'s `todayISO()`.
-5. **Unchanged carryovers** — regex-based mock, per-isolate rate limiter, TIMEZONE duplication, no UI tests on History/Memento.
+1. **v4.8.2 shipped to production** — `wrangler deploy` succeeded; `task-logger.adduckivity.com` now serves the redesigned StreakCard + WeeklyDigest with footer reading `v4.8.2`.
+2. **Backend verified green** — `node scripts/test-worker.mjs` passes 78/78 assertions (signup, login, JWT auth, CRUD, row-level isolation, validation, insights math, streaks, user cap).
+3. **Security clean** — `npm audit` reports 0 vulnerabilities in both root and frontend trees.
+4. **Frontend builds clean** — `npm --prefix frontend run build` produces PWA manifest + service worker in 87 ms (Vite 8 / Rolldown).
+5. **Documentation/version drifts fixed in this release**:
+   - **D1** ✅ Inline `CREATE TABLE entries` in REQUIREMENTS now matches `schema.sql` (REAL 1.0–10.0).
+   - **D2** ✅ `frontend/src/version.js` bumped to 4.8.2; CHANGELOG has a v4.8.2 entry; README + STATUS updated.
+   - **D5** ✅ `SignupScreen.jsx` birthday `max` now uses `todayISO()` from `lib/date.js` (was UTC, drifted east of UTC+7).
+6. **Remaining Low-severity items** (deferred — non-blocking):
+   - **D3** ADR listing in REQUIREMENTS project-structure block stops at 0005.
+   - **D4** Stale "legacy components" note in REQUIREMENTS — those files were already removed in v4.x.
+   - **D6** `MementoMori.jsx` uses local-time parsing instead of `lib/date.js` — works in practice but conceptually inconsistent.
+7. **Unchanged carryovers from Review 3** — regex-based mock, per-isolate rate limiter, TIMEZONE duplication, no UI tests on History/Memento.
 
 ---
 

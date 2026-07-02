@@ -5,6 +5,55 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [4.8.2] - 2026-07-02
+
+### Changed
+- **StreakCard** redesigned for readability: hero "Day N" focal point with
+  flame, "Best" + "This year" stat tiles below, subtle nudge hint. Replaces
+  the cramped single-row layout where everything ran together.
+- **WeeklyDigest** redesigned: 3-column stat grid (Days logged / Avg
+  happiness with delta badge / Success rate) and "Best day" footer. Delta
+  is colored green-up / red-down / gray-flat. Replaces the dense
+  run-on-sentence layout.
+- **TodayView**: 16 px spacers between StreakCard, EntryForm, and
+  WeeklyDigest so cards have breathing room.
+- **styles.css**: full CSS for both redesigned cards (was missing from the
+  initial v4.8.0 release; the production deploy had been serving unstyled
+  components).
+- **Footer**: tab-bar pinned to bottom via `100dvh` so it's never hidden
+  behind mobile browser chrome; update-banner lifted above the tab-bar
+  with a `--tab-bar-height` CSS variable.
+
+### Fixed
+- **Release discipline** (Review 5, D2): the previous v4.8.2 code-only
+  commit (`6fa8b3b`) shipped without a CHANGELOG entry, README stamp, or
+  `version.js` bump. Production footer was therefore displaying
+  `v4.8.1` despite the v4.8.2 redesign being live. This release catches
+  the drift: `frontend/src/version.js` is now `4.8.2` and the README /
+  STATUS version stamps reflect the deployed code.
+- **REQUIREMENTS schema block** (Review 5, D1): the inline
+  `CREATE TABLE entries` example in `docs/REQUIREMENTS.md` had not been
+  updated when v4.7.0 made `happiness` / `progress` decimals (REAL,
+  1.0–10.0). It is now in sync with `schema.sql` and ADR 0006.
+- **SignupScreen birthday clamp** (Review 5, D5): the date picker's
+  `max={today}` used the browser's local timezone via `Date.toISOString()`.
+  Every other "today" computation in the project uses GMT+7 via
+  `lib/date.js`. In a browser east of UTC+7 the picker would silently
+  accept "tomorrow in GMT+7" as a birthday. Fixed by importing and
+  using `todayISO()`.
+
+### Docs
+- Review 5 logged in `docs/REVIEWS.md` — covers v4.8.1 dependency
+  upgrade + this v4.8.2 release-discipline patch.
+- `STATUS.md` updated to v4.8.2 with a retrospective on the release
+  discipline gap (code-only commit without `version.js` / CHANGELOG /
+  STATUS updates in the same change).
+
+### Notes
+- The three Low-severity follow-ups from Review 5 remain open: ADR
+  listing cleanup (D3), legacy-components note (D4), and MementoMori
+  timezone util (D6). None are user-facing; defer to next sprint.
+
 ## [4.8.1] - 2026-07-02
 
 ### Security

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { api, setSession } from '../api/client.js';
+import { todayISO } from '../lib/date.js';
 
 const USERNAME_RE = /^[a-z0-9_]{3,32}$/;
 
@@ -94,7 +95,7 @@ export default function SignupScreen({ onSuccess, onSwitchToLogin }) {
             type="date"
             value={birthday}
             onChange={(e) => setBirthday(e.target.value)}
-            max={new Date().toISOString().slice(0, 10)}
+            max={todayISO()}
             required
           />
         </div>
