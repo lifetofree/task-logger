@@ -20,3 +20,6 @@ npm-debug.log*
 .env
 .env.local
 .jwt-secret
+
+# Local Claude Code config
+.claude/
