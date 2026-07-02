@@ -5,6 +5,23 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [4.8.1] - 2026-07-02
+
+### Security
+- Upgraded `vite` 5.3 → 8.1.3, `vite-plugin-pwa` 0.20 → 1.3.0,
+  `@vitejs/plugin-react` 4.3 → 6.0.3. Resolves the high-severity esbuild
+  development-server vulnerability
+  ([GHSA-67mh-4wv8-2f99](https://github.com/advisories/GHSA-67mh-4wv8-2f99))
+  and two moderate transitive vulnerabilities.
+- `npm audit` now reports **0 vulnerabilities** (was 3: 1 high, 2 moderate).
+- Installed with `--legacy-peer-deps` to resolve a Babel 7/8 peer conflict
+  in the `@vitejs/plugin-react@6` toolchain; the resolution is baked into the
+  lockfile so future `npm ci` runs are unaffected.
+
+### Changed
+- No code or config changes — `vite.config.js` imports are unchanged.
+- Build is faster (97 ms vs 447 ms) due to Vite 8 / Rolldown improvements.
+
 ## [4.8.0] - 2026-07-02
 
 ### Added
