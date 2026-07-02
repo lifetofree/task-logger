@@ -6,6 +6,8 @@ import { todayISO, daysAgoISO } from '../lib/date.js';
  * Weekly reflection digest shown on TodayView.
  * Reuses the existing /api/insights/daily endpoint (no backend change).
  * Compares the last 7 days against the prior 7 days.
+ * Focuses on happiness (matches Memento Mori color scale); progress/success
+ * metrics are intentionally not surfaced here.
  */
 export default function WeeklyDigest() {
   const [summary, setSummary] = useState(null);
@@ -46,19 +48,12 @@ export default function WeeklyDigest() {
           ? thisWeek.reduce((m, d) => (d.avgHappiness > m.avgHappiness ? d : m))
           : null;
 
-        const successRate = thisWeek.length
-          ? Math.round(
-              (thisWeek.reduce((s, d) => s + (d.successRate || 0), 0) / thisWeek.length) * 100,
-            ) / 100
-          : null;
-
         if (!cancelled) {
           setSummary({
             daysThisWeek: thisWeek.length,
             thisAvg,
             delta,
             best,
-            successRate,
           });
         }
       } catch (err) {
@@ -74,7 +69,7 @@ export default function WeeklyDigest() {
   if (error) return null; // silent — digest is non-critical
   if (!summary) return null;
 
-  const { daysThisWeek, thisAvg, delta, best, successRate } = summary;
+  const { daysThisWeek, thisAvg, delta, best } = summary;
 
   // Nothing logged this week yet — don't show an empty digest.
   if (daysThisWeek === 0) return null;
@@ -101,12 +96,6 @@ export default function WeeklyDigest() {
               {deltaUp ? '↑' : deltaDown ? '↓' : '→'} {Math.abs(delta).toFixed(1)}
             </span>
           )}
-        </div>
-        <div className="digest-stat">
-          <span className="digest-stat-value">
-            {successRate != null ? `${Math.round(successRate * 100)}%` : '—'}
-          </span>
-          <span className="digest-stat-label">success</span>
         </div>
       </div>
       {best && (

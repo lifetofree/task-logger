@@ -170,7 +170,8 @@ Two stored entities: **User** and **Task Log Entry**.
 
 **Acceptance Criteria**:
 - A WeeklyDigest card on the Today view summarizes the last 7 days vs the prior 7 days.
-- Shows: days logged this week, average happiness with a directional delta (↑/↓/→) vs last week, best day (date + happiness), and success rate.
+- Shows: days logged this week, average happiness with a directional delta (↑/↓/→) vs last week, and best day (date + happiness).
+- Focus is on daily happiness (matches the Memento Mori color scale) — progress / success rate are intentionally not surfaced here.
 - Hidden entirely if no entries exist in the current week (no empty-state noise).
 - Reuses the existing `GET /api/insights/daily` endpoint (no new backend call beyond streaks).
 

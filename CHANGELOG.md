@@ -5,6 +5,23 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [4.8.3] - 2026-07-02
+
+### Changed
+- **WeeklyDigest** card now focuses on happiness — the third "success rate"
+  tile has been removed. The card now shows only: days logged this week,
+  average happiness (with directional delta vs last week), and best day.
+- Rationale: the Memento Mori visualization colors each day by its average
+  happiness, so the weekly digest should reinforce the same single dimension.
+  Progress / success-rate metrics were drifting focus away from the daily
+  reflection. (`US-10` acceptance criteria updated accordingly.)
+
+### Removed
+- `successRate` aggregation in `WeeklyDigest.jsx` (the backend
+  `/api/insights/daily` field is still returned but no longer consumed by
+  this card; no other UI surface uses it today, defer a backend cleanup
+  until a second consumer appears).
+
 ## [4.8.2] - 2026-07-02
 
 ### Changed
