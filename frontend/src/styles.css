@@ -48,14 +48,16 @@ input, textarea, select {
 .app-shell {
   display: flex;
   flex-direction: column;
-  min-height: 100vh;
-  /* Use svh (small viewport height) instead of dvh. dvh animates with the iOS
-     keyboard and causes position: fixed elements (the tab-bar) to desync after
-     keyboard dismiss + scroll — the bar floats at a stale viewport position.
-     svh is the smallest stable viewport and doesn't shift on keyboard events. */
-  min-height: 100svh;
+  /* Fixed-height scroll container — the WHOLE app-shell is the scroller, not
+     the body. This is the iOS-safe pattern: position: fixed elements desync
+     after keyboard open/close + scroll on iOS SafariWebView. By making the
+     shell a fixed-height flex column scroller, the tab-bar becomes an in-flow
+     flex child (not fixed) and never desyncs. svh = stable small viewport. */
+  height: 100vh;
+  height: 100svh;
   max-width: 720px;
   margin: 0 auto;
+  overflow: hidden;
 }
 
 .app-header {
@@ -91,7 +93,8 @@ input, textarea, select {
 .view {
   flex: 1;
   padding: 20px;
-  padding-bottom: 140px;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 .app-footer {
@@ -160,39 +163,16 @@ input, textarea, select {
 }
 
 .tab-bar {
-  position: fixed;
-  /* Anchor at the safe-area edge so the bar's box ends above the
-     home-indicator strip; the .tab-bar-fill covers that strip. */
-  bottom: env(safe-area-inset-bottom, 0px);
-  left: 0;
-  right: 0;
-  max-width: 720px;
-  margin: 0 auto;
+  /* In-flow flex child of .app-shell (the scroll container). NOT position:
+     fixed — iOS SafariWebView desyncs fixed elements after keyboard + scroll,
+     causing content to shift ~250px relative to the bar. In-flow placement
+     in a flex scroller is immune to that desync. flex-shrink: 0 keeps the
+     bar at full height; padding absorbs the home-indicator inset. */
+  flex-shrink: 0;
   background: var(--bg-elev);
   border-top: 1px solid var(--border);
   z-index: 10;
-}
-
-/*
-  Fills the home-indicator strip below the tab-bar on iOS PWA standalone.
-  iOS SafariWebView does NOT paint a fixed element's background into the
-  safe-area inset region (whether via padding-bottom or bottom: 0), and a
-  ::after pseudo-element is trapped in the .tab-bar's stacking context.
-  A standalone fixed sibling with its own z-index paints reliably. Same
-  color + same max-width keeps it aligned with the bar above.
-  Pixel-verified against v4.8.5-debug screenshots.
-*/
-.tab-bar-fill {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  max-width: 720px;
-  margin: 0 auto;
-  height: env(safe-area-inset-bottom, 0px);
-  background: var(--bg-elev);
-  z-index: 9; /* below the tab-bar (10), above page content */
-  pointer-events: none;
+  padding-bottom: env(safe-area-inset-bottom, 0px);
 }
 
 .tab-bar-inner {
