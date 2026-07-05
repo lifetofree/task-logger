@@ -7,6 +7,11 @@ const MONTH_NAMES = [
   'July', 'August', 'September', 'October', 'November', 'December',
 ];
 
+const WEEKDAY_NAMES = [
+  'Sunday', 'Monday', 'Tuesday', 'Wednesday',
+  'Thursday', 'Friday', 'Saturday',
+];
+
 export default function HistoryView() {
   const [entries, setEntries] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -49,15 +54,23 @@ export default function HistoryView() {
     );
   }, [entries, searchQuery]);
 
-  // Group by month
-  function groupByMonth(items) {
-    const map = new Map();
+  // Group by month → date (nested)
+  function groupByMonthAndDate(items) {
+    const monthMap = new Map();
     for (const entry of items) {
       const monthKey = entry.log_date.slice(0, 7);
-      if (!map.has(monthKey)) map.set(monthKey, []);
-      map.get(monthKey).push(entry);
+      if (!monthMap.has(monthKey)) monthMap.set(monthKey, new Map());
+      const dateMap = monthMap.get(monthKey);
+      const dateKey = entry.log_date;
+      if (!dateMap.has(dateKey)) dateMap.set(dateKey, []);
+      dateMap.get(dateKey).push(entry);
     }
-    return [...map.entries()].sort((a, b) => b[0].localeCompare(a[0]));
+    return [...monthMap.entries()]
+      .sort((a, b) => b[0].localeCompare(a[0]))
+      .map(([monthKey, dateMap]) => {
+        const dateGroups = [...dateMap.entries()].sort((a, b) => b[0].localeCompare(a[0]));
+        return [monthKey, dateGroups];
+      });
   }
 
   function renderEntry(entry) {
@@ -68,23 +81,35 @@ export default function HistoryView() {
           <div className="entry-meta">
             <span className="chip happy-chip">😊 {entry.happiness}/10</span>
             <span className="chip progress-chip">📊 {Math.round(entry.progress * 10)}%</span>
-            <span>{entry.log_date}</span>
           </div>
         </div>
       </div>
     );
   }
 
+  function formatDateHeader(dateStr) {
+    // dateStr = 'YYYY-MM-DD'. Show e.g. "Mon 15" with weekday + day.
+    const [y, m, d] = dateStr.split('-').map(Number);
+    const date = new Date(Date.UTC(y, m - 1, d));
+    const weekday = WEEKDAY_NAMES[date.getUTCDay()];
+    return `${weekday} ${d}`;
+  }
+
   function renderMonthGroups(items) {
-    return groupByMonth(items).map(([monthKey, monthEntries]) => {
+    return groupByMonthAndDate(items).map(([monthKey, dateGroups]) => {
       const [year, month] = monthKey.split('-');
       const monthName = MONTH_NAMES[parseInt(month, 10) - 1];
       return (
         <div key={monthKey} className="history-month">
           <h4 className="history-month-header">{monthName} {year}</h4>
-          <div className="entry-list">
-            {monthEntries.map(renderEntry)}
-          </div>
+          {dateGroups.map(([dateKey, dayEntries]) => (
+            <div key={dateKey} className="history-date">
+              <h5 className="history-date-header">{formatDateHeader(dateKey)}</h5>
+              <div className="entry-list">
+                {dayEntries.map(renderEntry)}
+              </div>
+            </div>
+          ))}
         </div>
       );
     });

@@ -879,6 +879,19 @@ input, textarea, select {
   border-bottom: 1px solid var(--border);
 }
 
+.history-date {
+  margin-bottom: 16px;
+}
+
+.history-date-header {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-dim);
+  margin: 0 0 8px 0;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
 /* ─── Today view spacing ─── */
 .today-spacer {
   height: 16px;
