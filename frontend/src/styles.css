@@ -157,7 +157,9 @@ input, textarea, select {
 
 .tab-bar {
   position: fixed;
-  bottom: 0;
+  /* Anchor at the safe-area edge so the bar's box ends above the
+     home-indicator strip; the .tab-bar-fill covers that strip. */
+  bottom: env(safe-area-inset-bottom, 0px);
   left: 0;
   right: 0;
   max-width: 720px;
@@ -165,18 +167,18 @@ input, textarea, select {
   background: var(--bg-elev);
   border-top: 1px solid var(--border);
   z-index: 10;
-  /* Push the bar's box up by the home-indicator inset, then fill the inset
-     strip with the bar's own color via ::after. On iOS PWA standalone,
-     `padding-bottom: env(safe-area-inset)` on a fixed element does NOT
-     reliably paint the element background into the inset region — the body
-     background shows through as a lighter strip. Anchoring the box to the
-     safe edge and filling the gap with a same-color pseudo-element is the
-     reliable pattern across iOS versions. */
-  bottom: env(safe-area-inset-bottom, 0px);
 }
 
-.tab-bar::after {
-  content: '';
+/*
+  Fills the home-indicator strip below the tab-bar on iOS PWA standalone.
+  iOS SafariWebView does NOT paint a fixed element's background into the
+  safe-area inset region (whether via padding-bottom or bottom: 0), and a
+  ::after pseudo-element is trapped in the .tab-bar's stacking context.
+  A standalone fixed sibling with its own z-index paints reliably. Same
+  color + same max-width keeps it aligned with the bar above.
+  Pixel-verified against v4.8.5-debug screenshots.
+*/
+.tab-bar-fill {
   position: fixed;
   bottom: 0;
   left: 0;

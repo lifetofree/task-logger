@@ -114,6 +114,15 @@ export default function App() {
           &copy; {new Date().getFullYear()} adduckivity &middot; v{VERSION}
         </div>
       </nav>
+      {/*
+        iOS PWA standalone leaves a visible strip below the fixed tab-bar in the
+        home-indicator region. On iOS SafariWebView, padding-bottom /
+        ::after on the fixed .tab-bar do not paint the bar's background into
+        that strip — the .app-shell background shows through. This standalone
+        sibling element (its own stacking context, same color as the bar,
+        pinned to the true screen bottom) reliably fills it. Pixel-verified.
+      */}
+      <div className="tab-bar-fill" aria-hidden="true" />
     </div>
   );
 }
