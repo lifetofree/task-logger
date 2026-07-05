@@ -165,7 +165,28 @@ input, textarea, select {
   background: var(--bg-elev);
   border-top: 1px solid var(--border);
   z-index: 10;
-  padding-bottom: env(safe-area-inset-bottom);
+  /* Push the bar's box up by the home-indicator inset, then fill the inset
+     strip with the bar's own color via ::after. On iOS PWA standalone,
+     `padding-bottom: env(safe-area-inset)` on a fixed element does NOT
+     reliably paint the element background into the inset region — the body
+     background shows through as a lighter strip. Anchoring the box to the
+     safe edge and filling the gap with a same-color pseudo-element is the
+     reliable pattern across iOS versions. */
+  bottom: env(safe-area-inset-bottom, 0px);
+}
+
+.tab-bar::after {
+  content: '';
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  max-width: 720px;
+  margin: 0 auto;
+  height: env(safe-area-inset-bottom, 0px);
+  background: var(--bg-elev);
+  z-index: 9; /* below the tab-bar (10), above page content */
+  pointer-events: none;
 }
 
 .tab-bar-inner {
