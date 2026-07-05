@@ -39,37 +39,6 @@ export default function App() {
     return () => window.removeEventListener('auth:logout', onLogout);
   }, []);
 
-  // iOS SafariWebView (PWA) bug: after the soft keyboard opens for form input
-  // and then closes, position: fixed elements (the tab-bar) desync from the
-  // true viewport on scroll — the bar floats at a stale position. Resetting
-  // the scroll position on keyboard dismiss forces a viewport recompute and
-  // re-anchors fixed elements. Only triggers on touch devices (iOS).
-  useEffect(() => {
-    if (!authed) return;
-    function onFocusOut(e) {
-      if (!e.relatedTarget) {
-        // No new target took focus → keyboard dismissed. Defer to let iOS
-        // settle, then nudge the viewport to re-anchor fixed elements.
-        setTimeout(() => {
-          window.scrollTo(window.scrollX, window.scrollY);
-        }, 50);
-      }
-    }
-    function onVisualViewportResize() {
-      // visualViewport resize fires on keyboard open/close. When the keyboard
-      // is dismissed, re-scroll to re-anchor fixed elements.
-      if (window.visualViewport && window.visualViewport.height === window.innerHeight) {
-        window.scrollTo(window.scrollX, window.scrollY);
-      }
-    }
-    document.addEventListener('focusout', onFocusOut);
-    window.visualViewport?.addEventListener('resize', onVisualViewportResize);
-    return () => {
-      document.removeEventListener('focusout', onFocusOut);
-      window.visualViewport?.removeEventListener('resize', onVisualViewportResize);
-    };
-  }, [authed]);
-
   function handleSignOut() {
     clearSession();
     setAuthed(false);
