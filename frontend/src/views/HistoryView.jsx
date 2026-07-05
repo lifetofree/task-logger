@@ -92,16 +92,17 @@ export default function HistoryView() {
 
   return (
     <div className="view">
-      <h3 className="section-title">History</h3>
-
-      <div className="form-row" style={{ position: 'sticky', top: 52, zIndex: 5, background: 'var(--bg)', paddingBottom: 8, paddingTop: 8 }}>
-        <input
-          className="input"
-          type="text"
-          placeholder="Search older entries..."
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-        />
+      <div className="history-toolbar">
+        <h3 className="section-title">History</h3>
+        <div className="form-row">
+          <input
+            className="input"
+            type="text"
+            placeholder="Search older entries..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
+        </div>
       </div>
 
       {error && <div className="error-banner">{error}</div>}

@@ -858,6 +858,14 @@ input, textarea, select {
 
 /* History */
 
+.history-toolbar {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  background: var(--bg);
+  padding-bottom: 8px;
+}
+
 .history-month {
   margin-bottom: 24px;
 }
