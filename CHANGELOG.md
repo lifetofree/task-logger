@@ -5,6 +5,109 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [4.10.0] - 2026-07-05
+
+### Changed
+- Upgraded React and React DOM from 18.3.1 to 19.2.7 (`frontend/package.json`).
+  JS bundle grows from ~169 KB to ~219 KB (expected for the React 19 runtime).
+  Smoke-tested: title, root div, and JS bundle all serve correctly via
+  `vite preview`.
+
+### Fixed
+- Resolved a `frontend/package-lock.json` conflict between Dependabot PR #3
+  (react-dom 18→19) and PR #5 (react 18→19) by regenerating the lockfile with
+  both at `^19.2.7`.
+
+### Merged Dependabot PRs
+- #1 `actions/setup-node` 4 → 6
+- #2 `actions/checkout` 4 → 7
+- #4 `wrangler` 4.105 → 4.107
+
+## [4.9.1] - 2026-07-05
+
+### Fixed
+- Added top spacing to the Today entries header so it no longer collides with
+  the section above it.
+
+## [4.9.0] - 2026-07-05
+
+### Changed
+- History view now nests entries by month → date. Each month header (e.g.
+  "July 2026") is the primary group; inside it, entries are sub-grouped by
+  date with a weekday + day header (e.g. "MON 15"). The redundant per-entry
+  date chip was removed (the date now lives on the group header). Makes it
+  easier to scan a month and find entries for a specific day.
+
+## [4.8.9] - 2026-07-05
+
+### Fixed
+- History search box no longer overlaps month-group headers when scrolling.
+  The search input used `position: sticky; top: 52` tuned for the old
+  body-scroll layout; after the v4.8.8 scroll-container restructure the offset
+  was wrong. The section title + search input are now wrapped in a
+  `.history-toolbar` pinned to `top: 0` relative to `.view` (the scroll pane).
+
+## [4.8.8] - 2026-07-05
+
+### Fixed
+- iOS PWA footer desync (pixel-verified): after submit → scroll up → scroll
+  down on iOS PWA standalone, content shifted ~250 px (keyboard height)
+  relative to the `position: fixed` tab-bar. Fixed by restructuring to the
+  iOS-safe scroll-container pattern:
+  - `.app-shell`: fixed height (`100svh`), `overflow: hidden`, flex column —
+    it *is* the viewport; the body does not scroll.
+  - `.view`: `flex: 1`, `overflow-y: auto` — content scrolls inside `.view`.
+  - `.tab-bar`: in-flow flex child (`flex-shrink: 0`), **no longer
+    `position: fixed`** — because it lives in the same scroll context as the
+    content, it never shifts.
+  - Removed the `.view` bottom padding and `.tab-bar-fill` workaround that
+    existed to support the fixed bar.
+
+  Prior attempts (v4.8.4–v4.8.7) all kept `position: fixed` and patched around
+  it; the desync is fundamental to fixed positioning in iOS WebView after
+  keyboard interactions, so only removing `fixed` resolves it.
+
+## [4.8.7] - 2026-07-05
+
+### Reverted
+- Removed the speculative `focusout` + `visualViewport.resize → scrollTo`
+  handler added in v4.8.6. It caused a worse regression: after submit → scroll
+  up → scroll down, the tab-bar was pushed below the visible screen edge
+  ("bar cut off at bottom"). The `100svh` CSS change from v4.8.6 is kept
+  (defensive, harmless). See v4.8.8 for the real fix.
+
+## [4.8.6] - 2026-07-05
+
+### Fixed
+- iOS PWA footer desync after keyboard open/close + scroll. Root cause: iOS
+  SafariWebView desyncs `position: fixed` elements from the layout viewport
+  after dynamic viewport changes; `100dvh` compounded it because `dvh`
+  animates during keyboard transitions.
+  - CSS: switched `.app-shell` from `100dvh` to `100svh` (smallest stable
+    viewport; does not animate during keyboard events).
+  - JS: added `focusout` + `visualViewport.resize` listeners (mounted only
+    when authed) that re-scroll on keyboard dismiss. *(This JS handler was
+    reverted in v4.8.7.)*
+
+## [4.8.5] - 2026-07-05
+
+### Fixed
+- Mobile footer home-indicator gap (pixel-verified via a `v4.8.5-debug`
+  diagnostic build): on iOS PWA standalone, the home-indicator strip below the
+  fixed `.tab-bar` painted the `.app-shell` background instead of the bar's
+  color. Two prior attempts failed — `padding-bottom: env(safe-area-inset-bottom)`
+  (iOS does not paint a fixed element's background into the padded safe-area)
+  and `.tab-bar::after` (trapped inside the bar's stacking context). Fix: a
+  standalone fixed sibling element (`.tab-bar-fill`) outside `.tab-bar`, with
+  its own stacking context, same `--bg-elev` background, pinned to
+  `bottom: 0` with `height: env(safe-area-inset-bottom)`. *(Later removed in
+  v4.8.8 when the tab-bar became in-flow.)*
+
+## [4.8.4] - 2026-07-05
+
+### Fixed
+- Version bump for the mobile footer safe-area fix (content shipped in v4.8.5).
+
 ## [4.8.3] - 2026-07-02
 
 ### Changed
