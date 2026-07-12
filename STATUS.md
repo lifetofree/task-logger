@@ -2,8 +2,8 @@
 
 ## Current Stage
 
-- **Role**: DevOps (Stage 7) — **Complete** (v4.10.0 committed to `main` 2026-07-05)
-- **Status**: 🟢 Shipped. v4.10.0 is the current `version.js`; `main` and `dev` are in sync.
+- **Role**: DevOps (Stage 7) — **Complete** (v4.10.1 committed to `dev` 2026-07-12)
+- **Status**: 🟢 Shipped. v4.10.1 is the current `version.js`.
 - **Last Updated**: 2026-07-12
 
 > **Production deploy note:** the v4.8.4 → v4.10.0 commits are on `main` but
@@ -15,7 +15,7 @@
 
 ## SDLC Progress Tracker
 
-- [x] **Stage 1: Product Owner** — v4.10.0 is a dependency-bump release (React 18 → 19) plus the v4.8.4–v4.9.1 mobile/iOS-layout and History-grouping work; no product-spec change.
+- [x] **Stage 1: Product Owner** — v4.10.1 Memento Mori tweak: drop "days ahead" stat, expand Stoic quote pool. v4.10.0 was a dependency-bump release (React 18 → 19) plus the v4.8.4–v4.9.1 mobile/iOS-layout and History-grouping work.
 - [x] **Stage 2: Product Manager** — `REQUIREMENTS.md` unchanged since v4.8.3 (US-10 still reflects the happiness focus).
 - [x] **Stage 3: Tech Lead** — Tech Stack defined (`wrangler.toml`).
 - [x] **Stage 4: Architect** — Database schema (`schema.sql`) and APIs designed; ADRs 0001–0007 current. No schema/API change since v4.8.3.
@@ -46,9 +46,10 @@ These nine releases landed in a single day on `dev`, then reached `main`:
 
 ---
 
-## Handoff Notes (v4.10.0)
+## Handoff Notes (v4.10.1)
 
-1. **Version stamps are now in sync** — `version.js`, `package.json` (root), `frontend/package.json`, `README.md`, and this file all read 4.10.0.
+1. **v4.10.1** — Memento Mori: removed the "days ahead" stat (only "days lived" remains); expanded the Stoic quote pool from 15 to 44 with sourced attributions (Marcus Aurelius, Seneca, Epictetus, Zeno).
+2. **Version stamps in sync** — `version.js`, `package.json` (root), `frontend/package.json`, `README.md`, and this file all read 4.10.1.
 2. **CHANGELOG backfilled** — entries for 4.8.4 through 4.10.0 added from commit diffs (2026-07-12).
 3. **Backend verified green** — `node scripts/test-worker.mjs` passes 78/78 assertions (signup, login, JWT auth, CRUD, row-level isolation, validation, insights math, streaks, user cap). No backend change since v4.8.3.
 4. **Branches** — `main` and `dev` are at the same commit (47d8cc3).

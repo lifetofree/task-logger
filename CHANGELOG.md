@@ -5,6 +5,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [4.10.1] - 2026-07-12
+
+### Changed
+- **Memento Mori:** removed the "days ahead" stat from the top block. Only
+  "days lived" is shown now.
+- **Memento Mori:** expanded the rotating Stoic quote pool from 15 to 44,
+  organized by source — Marcus Aurelius (15), Seneca (14), Epictetus (11),
+  Zeno of Citium (4). Replaced mis-attributed and non-Stoic entries (e.g. the
+  Braveheat-derived "Every man dies…") with sourced quotations and added
+  `— Author` attribution throughout.
+
 ## [4.10.0] - 2026-07-05
 
 ### Changed
