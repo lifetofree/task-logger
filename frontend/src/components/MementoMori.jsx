@@ -125,6 +125,7 @@ export default function MementoMori({ heatmapData, birthday }) {
   const endYear = bd ? bd.getFullYear() + LIFE_YEARS - 1 : null;
 
   const livedDays = allDays.filter((d) => d.isPast || d.isToday).length;
+  const remainingDays = allDays.length - livedDays;
 
   // Pick a random quote (stable per session)
   const quote = useMemo(() => {
@@ -193,6 +194,10 @@ export default function MementoMori({ heatmapData, birthday }) {
           <div className="memento-stat">
             <span className="memento-stat-num">{livedDays.toLocaleString()}</span>
             <span className="memento-stat-label">days lived</span>
+          </div>
+          <div className="memento-stat">
+            <span className="memento-stat-num">{remainingDays.toLocaleString()}</span>
+            <span className="memento-stat-label">days remaining</span>
           </div>
         </div>
         <p className="memento-quote">{quote}</p>

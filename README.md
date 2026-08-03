@@ -125,4 +125,4 @@ Covers signup, login, JWT auth, entry CRUD, row-level isolation, validation, ins
 
 ---
 
-&copy; adduckivity · v4.10.1
+&copy; adduckivity · v4.11.0
