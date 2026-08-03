@@ -1,6 +1,6 @@
 {
   "name": "task-logger",
-  "version": "4.8.1",
+  "version": "4.11.0",
   "private": true,
   "type": "module",
   "scripts": {

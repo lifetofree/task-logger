@@ -4,21 +4,57 @@ const LIFE_YEARS = 80;
 const DAYS_PER_ROW = 28; // 4 weeks per row
 
 const QUOTES = [
-  'You could leave life right now. Let that determine what you do and say and think.',
-  'It is not that we have a short time to live, but that we waste much of it. - Seneca',
-  'Remember that you are mortal. This is the ultimate tool for living well.',
-  'Do not act as if you had ten thousand years to live. - Marcus Aurelius',
-  'Death is not the greatest loss in life. The greatest loss is what dies inside us while we live.',
-  'Every man dies. Not every man really lives.',
-  'Life is short. Act now. Tomorrow is not promised.',
-  'Think of yourself as dead. You have lived your life. Now take what is left and live it properly. - Marcus Aurelius',
-  'We do not fear death, we fear that no one will remember us after we are gone.',
-  'The whole future lies in uncertainty: live immediately. - Seneca',
-  'Let us prepare our minds as if we had come to the very end of life. - Seneca',
-  'He who fears death will never do anything worthy of a living man. - Seneca',
-  'Life is a spark between two identical voids. Make it burn bright.',
-  'While we wait for life, life passes. - Seneca',
-  'Waste no more time arguing about what a good man should be. Be one. - Marcus Aurelius',
+  // Marcus Aurelius — Meditations
+  'You could leave life right now. Let that determine what you do and say and think. — Marcus Aurelius',
+  'Do not act as if you had ten thousand years to live. — Marcus Aurelius',
+  'Think of yourself as dead. You have lived your life. Now take what is left and live it properly. — Marcus Aurelius',
+  'Waste no more time arguing about what a good man should be. Be one. — Marcus Aurelius',
+  'It is not death that a man should fear, but he should fear never beginning to live. — Marcus Aurelius',
+  'Very little is needed to make a happy life; it is all within yourself, in your way of thinking. — Marcus Aurelius',
+  'The happiness of your life depends upon the quality of your thoughts. — Marcus Aurelius',
+  'Live a good life. If there are gods and they are just, they will welcome you for the virtues you have lived. — Marcus Aurelius',
+  'Confine yourself to the present. — Marcus Aurelius',
+  'The best revenge is to be unlike him who performed the injury. — Marcus Aurelius',
+  'Accept the things to which fate binds you, and love the people with whom fate brings you together. — Marcus Aurelius',
+  'Dwell on the beauty of life. Watch the stars, and see yourself running with them. — Marcus Aurelius',
+  'When you arise in the morning, think of what a precious privilege it is to be alive. — Marcus Aurelius',
+  'The object of life is not to be on the side of the majority, but to escape finding oneself in the ranks of the insane. — Marcus Aurelius',
+  'Death smiles at us all; let us smile back. — Marcus Aurelius',
+
+  // Seneca — Letters from a Stoic / On the Shortness of Life
+  'It is not that we have a short time to live, but that we waste much of it. — Seneca',
+  'The whole future lies in uncertainty: live immediately. — Seneca',
+  'Let us prepare our minds as if we had come to the very end of life. — Seneca',
+  'He who fears death will never do anything worthy of a living man. — Seneca',
+  'While we wait for life, life passes. — Seneca',
+  'We suffer more often in imagination than in reality. — Seneca',
+  'Every new beginning comes from some other beginning\'s end. — Seneca',
+  'Luck is what happens when preparation meets opportunity. — Seneca',
+  'As is a tale, so is life: not how long it is, but how good it is, is what matters. — Seneca',
+  'If a man knows not to which port he sails, no wind is favorable. — Seneca',
+  'Wherever there is a human being, there is an opportunity for a kindness. — Seneca',
+  'We are more often frightened than hurt; and we suffer more from imagination than from reality. — Seneca',
+  'Begin at once to live, and count each separate day as a separate life. — Seneca',
+  'Life is like a play: it matters not how long the script is, but how well it is acted. — Seneca',
+
+  // Epictetus — Enchiridion / Discourses
+  'It\'s not what happens to you, but how you react to it that matters. — Epictetus',
+  'Wealth consists not in having great possessions, but in having few wants. — Epictetus',
+  'He is a wise man who does not grieve for the things which he has not, but rejoices for those which he has. — Epictetus',
+  'Make the best use of what is in your power, and take the rest as it happens. — Epictetus',
+  'No man is free who is not master of himself. — Epictetus',
+  'Don\'t explain your philosophy. Embody it. — Epictetus',
+  'First say to yourself what you would be; and then do what you have to do. — Epictetus',
+  'Circumstances don\'t make the man, they only reveal him to himself. — Epictetus',
+  'If you want to improve, be content to be thought foolish and stupid. — Epictetus',
+  'Any person capable of angering you becomes your master. — Epictetus',
+  'Other people\'s views and troubles can be contagious. Don\'t sabotage yourself by unwittingly adopting negative attitudes. — Epictetus',
+
+  // Zeno / Cleanthes / Musonius Rufus — founders and Roman Stoics
+  'We have two ears and one mouth, so we should listen more than we say. — Zeno of Citium',
+  'Man conquers the world by conquering himself. — Zeno of Citium',
+  'Well-being is attained by small steps, but is truly no small thing. — Zeno of Citium',
+  'The chief task in life is simply this: to identify and separate matters. — Epictetus',
 ];
 
 function isoDate(d) {
@@ -88,9 +124,8 @@ export default function MementoMori({ heatmapData, birthday }) {
   const bd = birthday ? new Date(birthday + 'T00:00:00') : null;
   const endYear = bd ? bd.getFullYear() + LIFE_YEARS - 1 : null;
 
-  const totalDays = allDays.length;
   const livedDays = allDays.filter((d) => d.isPast || d.isToday).length;
-  const remainingDays = totalDays - livedDays;
+  const remainingDays = allDays.length - livedDays;
 
   // Pick a random quote (stable per session)
   const quote = useMemo(() => {
@@ -162,7 +197,7 @@ export default function MementoMori({ heatmapData, birthday }) {
           </div>
           <div className="memento-stat">
             <span className="memento-stat-num">{remainingDays.toLocaleString()}</span>
-            <span className="memento-stat-label">days ahead</span>
+            <span className="memento-stat-label">days remaining</span>
           </div>
         </div>
         <p className="memento-quote">{quote}</p>

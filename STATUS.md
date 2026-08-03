@@ -2,39 +2,62 @@
 
 ## Current Stage
 
-- **Role**: DevOps (Stage 7) — **Complete** (v4.8.3 deployed 2026-07-02)
-- **Status**: 🟢 Shipped; v4.8.3 is live in production.
-- **Last Updated**: 2026-07-02
+- **Role**: DevOps (Stage 7) — **Complete** (v4.10.1 committed to `dev` 2026-07-12)
+- **Status**: 🟢 Shipped. v4.10.1 is the current `version.js`.
+- **Last Updated**: 2026-07-12
+
+> **Production deploy note:** the v4.8.4 → v4.10.0 commits are on `main` but
+> whether each has been deployed to `task-logger.adduckivity.com` is not
+> recorded in-repo. Run `npm run deploy` from `main` to bring production to
+> v4.10.0 if it lags.
 
 ---
 
 ## SDLC Progress Tracker
 
-- [x] **Stage 1: Product Owner** — v4.8.3 WeeklyDigest focus-alignment decision (drop success rate, lean into happiness).
-- [x] **Stage 2: Product Manager** — `REQUIREMENTS.md` US-10 acceptance criteria updated to reflect the card's happiness focus.
+- [x] **Stage 1: Product Owner** — v4.10.1 Memento Mori tweak: drop "days ahead" stat, expand Stoic quote pool. v4.10.0 was a dependency-bump release (React 18 → 19) plus the v4.8.4–v4.9.1 mobile/iOS-layout and History-grouping work.
+- [x] **Stage 2: Product Manager** — `REQUIREMENTS.md` unchanged since v4.8.3 (US-10 still reflects the happiness focus).
 - [x] **Stage 3: Tech Lead** — Tech Stack defined (`wrangler.toml`).
-- [x] **Stage 4: Architect** — Database schema (`schema.sql`) and APIs designed; ADRs 0001–0007 current. No schema/API change in v4.8.3.
-- [x] **Stage 5: Coder** — Test suite green: 78/78 assertions (no test changes; client-only change).
-- [x] **Stage 6: Reviewer** — Reviews 4 (v4.8.0) and 5 (v4.8.1/v4.8.2) logged. v4.8.3 is a small content/UX delta on top of v4.8.2; no separate review pass required.
-- [x] **Stage 7: DevOps** — Deployed v4.8.3 to production via `wrangler deploy`. CI pipeline (`.github/workflows/ci.yml`), README, local-dev docs in place; `npm audit` 0 vulnerabilities in both trees.
+- [x] **Stage 4: Architect** — Database schema (`schema.sql`) and APIs designed; ADRs 0001–0007 current. No schema/API change since v4.8.3.
+- [x] **Stage 5: Coder** — Test suite green: 78/78 assertions (re-verified 2026-07-12; no test changes in v4.8.4–v4.10.0).
+- [x] **Stage 6: Reviewer** — Reviews 4 (v4.8.0) and 5 (v4.8.1/v4.8.2) logged. v4.8.3–v4.10.0 are client/dep-only deltas; no separate review pass was recorded.
+- [x] **Stage 7: DevOps** — v4.10.0 on `main`; CI pipeline (`.github/workflows/ci.yml`) current; README + STATUS version stamps synced this pass (2026-07-12).
 
 ---
 
-## Handoff Notes (v4.8.3)
+## What shipped between v4.8.3 and v4.10.0 (2026-07-05)
 
-1. **v4.8.3 shipped to production** — `wrangler deploy` succeeded; `task-logger.adduckivity.com` now serves the WeeklyDigest card with success-rate removed, footer reading `v4.8.3`.
-2. **Backend verified green** — `node scripts/test-worker.mjs` passes 78/78 assertions (signup, login, JWT auth, CRUD, row-level isolation, validation, insights math, streaks, user cap). The successRate field still flows out of `/api/insights/daily` for any future consumer; this release only removes its UI usage.
-3. **Security clean** — `npm audit` reports 0 vulnerabilities in both root and frontend trees.
-4. **Frontend builds clean** — `npm --prefix frontend run build` produces PWA manifest + service worker in ~90 ms (Vite 8 / Rolldown).
-5. **What changed in v4.8.3**:
-   - `WeeklyDigest` card now shows **days logged this week**, **avg happiness (with delta)**, and **best day** — success-rate tile removed.
-   - `docs/REQUIREMENTS.md` US-10 acceptance criteria updated to drop "success rate" and add the rationale (focus matches Memento Mori's happiness-colored grid).
-   - `frontend/src/version.js` → 4.8.3; CHANGELOG entry added; README + STATUS version stamps synced.
-6. **Remaining Low-severity items from Review 5** (still deferred — non-blocking):
+These nine releases landed in a single day on `dev`, then reached `main`:
+
+| Version | Theme |
+|---------|-------|
+| 4.8.4–4.8.8 | Iterative fixes for an iOS PWA footer/keyboard desync. The sequence tried a version bump → a safe-area fill element → a JS viewport handler (reverted) → and finally a scroll-container restructure that removed `position: fixed` from the tab-bar. |
+| 4.8.9 | History search box no longer overlapped month headers after the scroll-container change. |
+| 4.9.0 | History view nests entries by month → date. |
+| 4.9.1 | Top spacing added to the Today entries header. |
+| 4.10.0 | React + react-dom 18.3.1 → 19.2.7 (Dependabot PRs #1–#5 merged). |
+
+> **Doc-stamp drift corrected this pass:** when v4.8.4–v4.10.0 shipped,
+> `version.js` advanced but `package.json` (root), `frontend/package.json`,
+> `README.md`, `STATUS.md`, and `CHANGELOG.md` were not updated alongside —
+> the same release-discipline gap Review 5's retrospective called out.
+> On 2026-07-12 these were all reconciled to 4.10.0 and the nine CHANGELOG
+> entries were backfilled from the actual commit diffs.
+
+---
+
+## Handoff Notes (v4.10.1)
+
+1. **v4.11.0** — Memento Mori: restored the "days remaining" stat in the top block (days lived + days remaining = 29,200 over the 80-year horizon). Reverses the v4.10.1 removal.
+2. **Version stamps in sync** — `version.js`, `package.json` (root), `frontend/package.json`, `README.md`, and this file all read 4.11.0.
+2. **CHANGELOG backfilled** — entries for 4.8.4 through 4.10.0 added from commit diffs (2026-07-12).
+3. **Backend verified green** — `node scripts/test-worker.mjs` passes 78/78 assertions (signup, login, JWT auth, CRUD, row-level isolation, validation, insights math, streaks, user cap). No backend change since v4.8.3.
+4. **Branches** — `main` and `dev` are at the same commit (47d8cc3).
+5. **Remaining Low-severity items from Review 5** (still deferred — non-blocking):
    - **D3** ADR listing in REQUIREMENTS project-structure block stops at 0005.
    - **D4** Stale "legacy components" note in REQUIREMENTS — those files were already removed.
    - **D6** `MementoMori.jsx` uses local-time parsing instead of `lib/date.js`.
-7. **Unchanged carryovers from Review 3** — regex-based mock, per-isolate rate limiter, TIMEZONE duplication, no UI tests on History/Memento.
+6. **Unchanged carryovers from Review 3** — regex-based mock, per-isolate rate limiter, TIMEZONE duplication, no UI tests on History/Memento.
 
 ---
 
@@ -48,6 +71,12 @@ What went well:
 What to fix:
 - The release/version discipline broke between v4.8.1 and v4.8.2: a UI redesign with 206 lines of diff shipped without a CHANGELOG entry or version bump. Going forward, a release must update (a) `frontend/src/version.js`, (b) `CHANGELOG.md`, and (c) `STATUS.md` in the same commit as user-visible changes.
 - `REQUIREMENTS.md` is treated as the source of truth for new contributors; we need a process check that schema changes bump both `schema.sql` and the inline schema block in REQUIREMENTS.md in the same PR.
+
+> **2026-07-12 note:** the release-discipline gap recurred — v4.8.4 through
+> v4.9.1 shipped with only `version.js` advanced, and v4.10.0 (a merge commit)
+> bumped `version.js` without touching the other stamps or CHANGELOG. This pass
+> reconciled them retroactively. The underlying process fix (single-commit
+> stamp sync) is still the open action.
 
 Next-sprint actions:
 1. Patch v4.8.2 docs (D1, D2, D3, D4) and the two frontend cleanliness items (D5, D6) in one PR. This will leave the project doc-clean and ready for v4.9.x.
