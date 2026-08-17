@@ -2,10 +2,10 @@ import React, { useState } from 'react';
 import { api, setSession } from '../api/client.js';
 import { todayISO } from '../lib/date.js';
 
-const USERNAME_RE = /^[a-z0-9_]{3,32}$/;
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export default function SignupScreen({ onSuccess, onSwitchToLogin }) {
-  const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirm, setConfirm] = useState('');
   const [birthday, setBirthday] = useState('');
@@ -15,8 +15,8 @@ export default function SignupScreen({ onSuccess, onSwitchToLogin }) {
   async function handleSubmit(e) {
     e.preventDefault();
     setError('');
-    if (!USERNAME_RE.test(username)) {
-      setError('Username must be 3-32 lowercase letters, digits, or underscores.');
+    if (!EMAIL_RE.test(email)) {
+      setError('Please enter a valid email address.');
       return;
     }
     if (password.length < 8) {
@@ -33,7 +33,7 @@ export default function SignupScreen({ onSuccess, onSwitchToLogin }) {
     }
     setLoading(true);
     try {
-      const data = await api.signup(username, password, birthday);
+      const data = await api.signup(email, password, birthday);
       setSession(data.token, data.user);
       onSuccess(data.user);
     } catch (err) {
@@ -47,18 +47,18 @@ export default function SignupScreen({ onSuccess, onSwitchToLogin }) {
     <div className="login-screen">
       <form className="login-card" onSubmit={handleSubmit}>
         <h2>Create your account</h2>
-        <p>Pick a username and password to start logging.</p>
+        <p>Enter your email and a password to start logging.</p>
         <div className="form-row">
-          <label htmlFor="signup-username">Username</label>
+          <label htmlFor="signup-email">Email</label>
           <input
-            id="signup-username"
+            id="signup-email"
             className="input"
-            type="text"
-            placeholder="alice"
-            value={username}
-            onChange={(e) => setUsername(e.target.value.toLowerCase())}
+            type="email"
+            placeholder="you@example.com"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
             autoFocus
-            autoComplete="username"
+            autoComplete="email"
             required
           />
         </div>

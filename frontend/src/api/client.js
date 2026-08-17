@@ -63,11 +63,11 @@ async function request(method, path, body) {
 export { ApiError };
 
 export const api = {
-  async signup(username, password, birthday) {
+  async signup(email, password, birthday) {
     const res = await fetch('/api/auth/signup', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ username, password, birthday }),
+      body: JSON.stringify({ email, password, birthday }),
     });
     if (!res.ok) {
       let message = 'Signup failed';
@@ -81,11 +81,11 @@ export const api = {
     }
     return res.json();
   },
-  async login(username, password) {
+  async login(email, password) {
     const res = await fetch('/api/auth/login', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ username, password }),
+      body: JSON.stringify({ email, password }),
     });
     if (!res.ok) {
       let message = 'Login failed';
@@ -100,6 +100,8 @@ export const api = {
     return res.json();
   },
   me: () => request('GET', '/api/auth/me'),
+  forgotPassword: (email) => request('POST', '/api/auth/forgot-password', { email }),
+  resetPassword: (token, newPassword) => request('POST', '/api/auth/reset-password', { token, newPassword }),
   listEntries: (date) => {
     const qs = date ? `?date=${encodeURIComponent(date)}` : '';
     return request('GET', `/api/entries${qs}`);

@@ -1,9 +1,10 @@
+DROP TABLE IF EXISTS password_reset_tokens;
 DROP TABLE IF EXISTS entries;
 DROP TABLE IF EXISTS users;
 
 CREATE TABLE users (
   id TEXT PRIMARY KEY,
-  username TEXT NOT NULL UNIQUE,
+  email TEXT NOT NULL UNIQUE,
   password_hash TEXT NOT NULL,
   birthday TEXT NOT NULL DEFAULT '1983-09-11',
   created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
@@ -20,6 +21,16 @@ CREATE TABLE entries (
   updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE INDEX idx_users_username ON users (username);
+CREATE TABLE password_reset_tokens (
+  id TEXT PRIMARY KEY,
+  user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  token_hash TEXT NOT NULL,
+  expires_at TEXT NOT NULL,
+  created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX idx_users_email ON users (email);
 CREATE INDEX idx_entries_user_date ON entries (user_id, log_date);
 CREATE INDEX idx_entries_user_created ON entries (user_id, created_at);
+CREATE INDEX idx_reset_tokens_hash ON password_reset_tokens (token_hash);
+CREATE INDEX idx_reset_tokens_user ON password_reset_tokens (user_id);
