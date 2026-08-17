@@ -5,6 +5,25 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [5.0.0] - 2026-08-17
+
+### Changed (Breaking)
+- **Auth: username replaced by email.** `users.username` column renamed to `email`. Sign-up and log-in now require a valid email address instead of a username handle. Existing user data (entries, streaks, Memento Mori) is fully preserved — only the login identifier changes.
+- **Signup/Login screens** updated: username field replaced by email input (`type="email"`).
+- **Header** now shows the local part of the email (before `@`) as the display name.
+- **API**: `POST /api/auth/signup` and `POST /api/auth/login` bodies now use `email` instead of `username`.
+
+### Added
+- **Forgot password flow** (`POST /api/auth/forgot-password`): generates a 30-minute reset token (SHA-256 hashed in DB), sends a reset link via Resend email API. Always returns 200 to prevent email enumeration.
+- **Reset password flow** (`POST /api/auth/reset-password`): validates token, updates password, invalidates all reset tokens for that user.
+- **ForgotPasswordScreen** — reachable via "Forgot password?" link on the login screen.
+- **ResetPasswordScreen** — shown automatically when the URL hash contains `#/reset?token=...`.
+- `password_reset_tokens` table: stores hashed tokens with expiry and cascading delete on user removal.
+- `RESEND_API_KEY` and `APP_BASE_URL` Worker secrets (optional — email silently skipped if absent).
+
+### Migration note
+- Production: non-destructive `ALTER TABLE` rename + `UPDATE users SET email = 'chonlaphon@gmail.com' WHERE email = 'lifetofree'`. All entries and user IDs unchanged.
+
 ## [4.11.0] - 2026-08-03
 
 ### Added

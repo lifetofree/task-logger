@@ -2,8 +2,8 @@
 
 ## Current Stage
 
-- **Role**: DevOps (Stage 7) — **Complete** (v4.10.1 committed to `dev` 2026-07-12)
-- **Status**: 🟢 Shipped. v4.10.1 is the current `version.js`.
+- **Role**: DevOps (Stage 7) — **Complete** (v5.0.0 committed to `main` 2026-08-17)
+- **Status**: 🟢 Shipped. v5.0.0 is the current `version.js`.
 - **Last Updated**: 2026-07-12
 
 > **Production deploy note:** the v4.8.4 → v4.10.0 commits are on `main` but

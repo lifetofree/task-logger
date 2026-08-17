@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { api, setSession } from '../api/client.js';
 
-export default function LoginScreen({ onSuccess, onSwitchToSignup }) {
-  const [username, setUsername] = useState('');
+export default function LoginScreen({ onSuccess, onSwitchToSignup, onForgotPassword }) {
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -12,7 +12,7 @@ export default function LoginScreen({ onSuccess, onSwitchToSignup }) {
     setError('');
     setLoading(true);
     try {
-      const data = await api.login(username, password);
+      const data = await api.login(email, password);
       setSession(data.token, data.user);
       onSuccess(data.user);
     } catch (err) {
@@ -28,15 +28,16 @@ export default function LoginScreen({ onSuccess, onSwitchToSignup }) {
         <h2>Sign in</h2>
         <p>Welcome back. Log in to continue.</p>
         <div className="form-row">
-          <label htmlFor="login-username">Username</label>
+          <label htmlFor="login-email">Email</label>
           <input
-            id="login-username"
+            id="login-email"
             className="input"
-            type="text"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
+            type="email"
+            placeholder="you@example.com"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
             autoFocus
-            autoComplete="username"
+            autoComplete="email"
             required
           />
         </div>
@@ -58,9 +59,24 @@ export default function LoginScreen({ onSuccess, onSwitchToSignup }) {
         </button>
         <button
           type="button"
-          onClick={onSwitchToSignup}
+          onClick={onForgotPassword}
+          className="switch-link"
           style={{
             marginTop: 12,
+            width: '100%',
+            background: 'none',
+            color: 'var(--text-dim)',
+            fontSize: 13,
+            padding: 8,
+          }}
+        >
+          Forgot password?
+        </button>
+        <button
+          type="button"
+          onClick={onSwitchToSignup}
+          style={{
+            marginTop: 4,
             width: '100%',
             background: 'none',
             color: 'var(--text-dim)',
