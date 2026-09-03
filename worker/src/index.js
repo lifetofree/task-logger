@@ -277,7 +277,7 @@ async function handleForgotPassword(request, env) {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        from: 'Task Logger <noreply@adduckivity.com>',
+        from: 'Task Logger <noreply@task-logger.adduckivity.com>',
         to: [user.email],
         subject: 'Reset your Task Logger password',
         html: `
@@ -287,8 +287,12 @@ async function handleForgotPassword(request, env) {
           <p>This link expires in 30 minutes. If you didn't request this, ignore this email.</p>
         `,
       }),
-    }).catch(() => {
-      // Non-fatal — token is stored, user can request again
+    }).then(async (res) => {
+      if (!res.ok) {
+        console.error(`Resend email failed: ${res.status} ${await res.text()}`);
+      }
+    }).catch((err) => {
+      console.error(`Resend email error: ${err.message}`);
     });
   }
 
