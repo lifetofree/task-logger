@@ -5,6 +5,42 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [5.1.0] - 2026-09-08
+
+### Added
+- **PhilosophyPanel** (`frontend/src/components/PhilosophyPanel.jsx`) — a
+  collapsible "Memento Mori คืออะไร" explainer card at the top of the Memento tab,
+  written in Thai. Four sections (คืออะไร / รากทางปรัชญา / ประวัติ /
+  ทำไมถึงช่วยให้ชีวิตดีขึ้น) covering the Stoic meaning of memento mori, the Roman
+  triumph tradition, and modern death-awareness psychology (including the
+  honest caveat that the practice only helps when paired with meaning,
+  relationships, and self-worth — which the app's daily happiness logging
+  reinforces). Plus a "อ่านต่อ" primary-sources list (Meditations, On the
+  Shortness of Life, Letters to Lucilius, Enchiridion).
+- **Verified quote pool** (`frontend/src/quotes.js`) — quotes restructured from
+  flat strings to `{ text, author, source }` with per-quote primary sources.
+  New verified quotes: Marcus Aurelius "You have your life. Your life has you."
+  (Meditations 12.3) and Seneca "Life is long if you know how to use it."
+  (On the Shortness of Life 1.1).
+- **Quote attribution + shuffle** — the Memento top block now shows
+  author + source under each quote, and a "New quote" button shuffles to a
+  different quote on demand (previously the quote was random once per mount).
+
+### Removed
+- **Two misattributed quotes** (verified 2026-09-08): "Every new beginning
+  comes from some other beginning's end." and "Luck is what happens when
+  preparation meets opportunity." — both were attributed to Seneca but do not
+  appear in his surviving works (the second traces to a 1928 City Loan
+  advertisement).
+
+### Changed
+- Quote rendering: `.memento-quote` split into text / attribution / source
+  styles; philosophy panel CSS added.
+
+### Notes
+- Research: see `memento-mori-research.md` in the parent `~/hermes-agent`
+  repo (not in this repo). Frontend-only release — no DB or API changes.
+
 ## [5.0.0] - 2026-08-17
 
 ### Changed (Breaking)

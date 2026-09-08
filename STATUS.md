@@ -2,9 +2,24 @@
 
 ## Current Stage
 
-- **Role**: DevOps (Stage 7) — **Complete** (v5.0.0 committed to `main` 2026-08-17)
-- **Status**: 🟢 Shipped. v5.0.0 is the current `version.js`.
-- **Last Updated**: 2026-07-12
+- **Role**: DevOps (Stage 7) — **Complete** (v5.1.0 committed to `main` 2026-09-08)
+- **Status**: 🟢 Shipped. v5.1.0 is the current `version.js`.
+
+### v5.1.0 (2026-09-08) — Memento philosophy layer (ADR 0008)
+- **PhilosophyPanel** (Thai, collapsible) at the top of the Memento tab:
+  what memento mori is, Stoic roots, Roman triumph history, modern
+  death-awareness psychology (with the honest "buffers" caveat), and a
+  primary-sources list. Frontend-only.
+- **Quote pool** → `frontend/src/quotes.js` as `{ text, author, source }`;
+  attribution + "New quote" shuffle in the top block.
+- **Removed 2 misattributed "Seneca" quotes** (verified 2026-09-08); added
+  2 verified (Meditations 12.3; On the Shortness of Life 1.1).
+- Verified: API smoke tests pass, `frontend build` clean, Thai spellcheck
+  (pythainlp) found only 3 false-positive suspects. Research:
+  `~/hermes-agent/memento-mori-research.md`.
+- **Deploy**: `npm run deploy` (needs a Cloudflare account / `CLOUDFLARE_API_TOKEN`
+  in CI — see README + `.github/workflows/`). CI runs API tests + frontend build on push.
+- **Last Updated**: 2026-09-08
 
 > **Production deploy note:** the v4.8.4 → v4.10.0 commits are on `main` but
 > whether each has been deployed to `task-logger.adduckivity.com` is not
